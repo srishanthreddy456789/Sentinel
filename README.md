@@ -610,17 +610,17 @@ Each stage has a specific responsibility.
 ```text
 SENTINEL/
 │
-├── frontend/
-├── backend/
-├── ai/
-├── data/
-├── prompts/
-├── research/
-├── infrastructure/
-├── mlops/
-├── tests/
-├── scripts/
-├── docs/
+├── frontend/  → UI + Tauri
+├── backend/  → FastAPI + database + APIs
+├── ai/       → entire AI/ML system
+├── data/     → datasets + benchmarks
+├── prompts/  → prompt assets/versioning
+├── research/ → experiments + paper
+├── infrastructure/  → Docker + Kubernetes
+├── mlops/  → MLflow + DVC + evaluation gates
+├── tests/   → all testing
+├── scripts/  → architecture + documentation
+├── docs/   → setup/utilities
 │
 ├── .github/
 ├── README.md
