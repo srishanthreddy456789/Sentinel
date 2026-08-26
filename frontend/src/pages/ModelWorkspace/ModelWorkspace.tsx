@@ -3,6 +3,7 @@ import { useSentinel } from '../../context/SentinelContext';
 import { ModelWorkspaceHeader } from './ModelWorkspaceHeader';
 import { ModelWorkspaceNav } from './ModelWorkspaceNav';
 import { IndividualDashboardTab } from './tabs/IndividualDashboardTab';
+import { ChatTab } from './tabs/ChatTab';
 import { PlaygroundTab } from './tabs/PlaygroundTab';
 import { EvaluationsTab } from './tabs/EvaluationsTab';
 import { FailuresTab } from './tabs/FailuresTab';
@@ -21,6 +22,8 @@ export const ModelWorkspace: React.FC = () => {
     switch (activeTab) {
       case 'Dashboard':
         return <IndividualDashboardTab />;
+      case 'Chat':
+        return <ChatTab />;
       case 'Playground':
         return <PlaygroundTab />;
       case 'Evaluations':

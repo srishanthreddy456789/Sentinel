@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   LayoutDashboard,
+  MessageSquare,
   Sparkles,
   ClipboardCheck,
   AlertOctagon,
@@ -17,6 +18,7 @@ import { WorkspaceTab } from '../../types/sentinel';
 
 const TABS: { id: WorkspaceTab; label: string; icon: React.FC<{ className?: string }> }[] = [
   { id: 'Dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'Chat', label: 'Chat', icon: MessageSquare },
   { id: 'Playground', label: 'Playground', icon: Sparkles },
   { id: 'Evaluations', label: 'Evaluations', icon: ClipboardCheck },
   { id: 'Failures', label: 'Failures', icon: AlertOctagon },
