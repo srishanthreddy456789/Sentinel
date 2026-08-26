@@ -226,6 +226,5 @@ release/
 frontend/release/
 .vite/
 frontend/.vite/
-*.log
-
-
+# Allow desktop build zip release for git tracking
+!frontend/SENTINEL-v1.0.0-Windows.zip
