@@ -37,7 +37,7 @@ export const ChatTab: React.FC = () => {
     scrollToBottom();
   }, [messages, isSending]);
 
-  const handleSend = (e?: React.FormEvent) => {
+  const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!input.trim() || isSending) return;
 
@@ -45,11 +45,13 @@ export const ChatTab: React.FC = () => {
     setInput('');
     setIsSending(true);
 
-    sendChatMessage(selectedModel.id, text);
-
-    setTimeout(() => {
+    try {
+      await sendChatMessage(selectedModel.id, text);
+    } catch (err) {
+      console.error('Error sending chat message:', err);
+    } finally {
       setIsSending(false);
-    }, 1050);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -78,7 +80,7 @@ export const ChatTab: React.FC = () => {
               <span className="flex items-center space-x-1 text-emerald-400">
                 <Key className="w-3 h-3" />
                 <span>
-                  {selectedModel.provider === 'SENTINEL Free Local Model'
+                  {selectedModel.provider === 'SENTINEL Free Local Model' || selectedModel.provider === 'Ollama'
                     ? 'Local Ollama Daemon Connected'
                     : selectedModel.apiKey
                     ? `API Key Verified (${selectedModel.apiKey.slice(0, 10)}...)`
