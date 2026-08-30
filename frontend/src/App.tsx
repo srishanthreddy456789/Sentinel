@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SentinelProvider, useSentinel } from './context/SentinelContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { DesktopHeader } from './components/shell/DesktopHeader';
 import { DesktopSidebar } from './components/shell/DesktopSidebar';
 import { AddApiModal } from './components/modals/AddApiModal';
 import { GlobalDashboard } from './pages/GlobalDashboard/GlobalDashboard';
 import { ModelWorkspace } from './pages/ModelWorkspace/ModelWorkspace';
+import { AuthPage } from './pages/Auth/AuthPage';
 
 const MainShell: React.FC = () => {
   const { selectedModelId } = useSentinel();
@@ -31,10 +33,26 @@ const MainShell: React.FC = () => {
   );
 };
 
-export default function App() {
+const AppContent: React.FC = () => {
+  const { isAuthenticated, demoLogin } = useAuth();
+  const [isGuestMode, setIsGuestMode] = useState(false);
+
+  if (!isAuthenticated && !isGuestMode) {
+    return <AuthPage onContinueAsGuest={() => demoLogin('engineer')} />;
+  }
+
   return (
     <SentinelProvider>
       <MainShell />
     </SentinelProvider>
   );
+};
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }
+
