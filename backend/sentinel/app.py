@@ -75,8 +75,12 @@ async def health_check():
         "environment": settings.ENVIRONMENT,
     }
 
+from sentinel.api.routes import health
+
 # Include API v1 Router Endpoints
 api_v1_prefix = settings.API_V1_STR
+app.include_router(health.router, prefix=api_v1_prefix)
+app.include_router(health.alerts_router, prefix=api_v1_prefix)
 app.include_router(auth.router, prefix=api_v1_prefix)
 app.include_router(keys.router, prefix=api_v1_prefix)
 app.include_router(apis.router, prefix=api_v1_prefix)
