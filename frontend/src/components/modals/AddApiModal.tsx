@@ -30,7 +30,7 @@ export const AddApiModal: React.FC = () => {
     setProvider(p);
     if (p === 'OpenAI') setModelName('GPT-4o');
     else if (p === 'Anthropic') setModelName('Claude 3.5 Sonnet');
-    else if (p === 'Google Gemini') setModelName('Gemini 1.5 Pro');
+    else if (p === 'Google Gemini') setModelName('gemini-flash-latest');
     else if (p === 'Ollama') setModelName('Llama 3.1 8B');
     else if (p === 'SENTINEL Free Local Model') setModelName('Llama 3.1 (SENTINEL Free)');
     else setModelName('Custom Model');
