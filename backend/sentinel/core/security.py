@@ -80,6 +80,8 @@ def mask_api_key(api_key: str) -> str:
         return ""
     if len(api_key) <= 8:
         return "****"
+    if len(api_key) <= 16:
+        return f"{api_key[:3]}****{api_key[-3:]}"
     return f"{api_key[:12]}****{api_key[-4:]}"
 
 import re

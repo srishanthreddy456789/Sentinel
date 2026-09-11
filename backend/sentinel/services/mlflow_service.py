@@ -18,12 +18,17 @@ class MLflowService:
     def _get_mlflow(self):
         if not self._initialized:
             try:
+                import urllib.request
                 import mlflow
+                # Quick 0.5s ping check before enabling MLflow tracking
+                req = urllib.request.Request(f"{self.tracking_uri}/health", method="GET")
+                with urllib.request.urlopen(req, timeout=0.5):
+                    pass
                 mlflow.set_tracking_uri(self.tracking_uri)
                 self._mlflow = mlflow
                 self._initialized = True
             except Exception as e:
-                logger.warning(f"MLflow client unavailable ({e}). Experiments will log to local fallback.")
+                logger.info(f"MLflow tracking server unreachable at {self.tracking_uri} ({e}). Using local fallback logging.")
                 self._mlflow = None
                 self._initialized = True
         return self._mlflow
