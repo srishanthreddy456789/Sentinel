@@ -11,7 +11,7 @@ export const FailuresTab: React.FC = () => {
 
   if (!selectedModel) return null;
 
-  const failures = failuresMap[selectedModel.id] || failuresMap['model-2'] || [];
+  const failures = failuresMap[selectedModel.id] || [];
 
   const filteredFailures = failures.filter((f) => {
     if (selectedType !== 'ALL' && f.type !== selectedType) return false;
@@ -83,77 +83,83 @@ export const FailuresTab: React.FC = () => {
           </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-zinc-300">
-            <thead className="bg-[#09090b] text-[10px] uppercase font-semibold text-zinc-500 border-b border-zinc-800 font-mono">
-              <tr>
-                <th className="px-5 py-2.5">Failure ID</th>
-                <th className="px-4 py-2.5">Test Case</th>
-                <th className="px-4 py-2.5">Type</th>
-                <th className="px-4 py-2.5">Severity</th>
-                <th className="px-4 py-2.5">Detected</th>
-                <th className="px-4 py-2.5">Diagnosis</th>
-                <th className="px-4 py-2.5">Healing</th>
-                <th className="px-4 py-2.5">Status</th>
-                <th className="px-4 py-2.5 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60 font-sans">
-              {filteredFailures.map((f) => (
-                <tr
-                  key={f.id}
-                  onClick={() => selectFailureForDiagnosis(f.id)}
-                  className="hover:bg-zinc-800/40 cursor-pointer transition-colors group"
-                >
-                  <td className="px-5 py-3 font-mono font-medium text-amber-400 group-hover:underline">
-                    {f.id}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-white group-hover:text-emerald-400 transition-colors">
-                    {f.testCase}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-[11px] text-zinc-300">{f.type}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
-                        f.severity === 'Critical' || f.severity === 'High'
-                          ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                          : f.severity === 'Medium'
-                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          : 'bg-zinc-800 text-zinc-400'
-                      }`}
-                    >
-                      {f.severity}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-[11px] text-zinc-400">{f.detectedTime}</td>
-                  <td className="px-4 py-3 text-zinc-400 text-[11px] max-w-xs truncate">{f.diagnosis}</td>
-                  <td className="px-4 py-3 font-mono text-[11px]">
-                    <span className={f.healingState === 'Resolved' ? 'text-emerald-400' : 'text-purple-400'}>
-                      {f.healingState}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono ${
-                        f.status === 'Resolved'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 animate-pulse-purple'
-                      }`}
-                    >
-                      {f.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <button className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-[11px] font-mono rounded flex items-center justify-center space-x-1">
-                      <SearchCode className="w-3 h-3" />
-                      <span>Diagnose</span>
-                    </button>
-                  </td>
+        {filteredFailures.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-zinc-300">
+              <thead className="bg-[#09090b] text-[10px] uppercase font-semibold text-zinc-500 border-b border-zinc-800 font-mono">
+                <tr>
+                  <th className="px-5 py-2.5">Failure ID</th>
+                  <th className="px-4 py-2.5">Test Case</th>
+                  <th className="px-4 py-2.5">Type</th>
+                  <th className="px-4 py-2.5">Severity</th>
+                  <th className="px-4 py-2.5">Detected</th>
+                  <th className="px-4 py-2.5">Diagnosis</th>
+                  <th className="px-4 py-2.5">Healing</th>
+                  <th className="px-4 py-2.5">Status</th>
+                  <th className="px-4 py-2.5 text-center">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/60 font-sans">
+                {filteredFailures.map((f) => (
+                  <tr
+                    key={f.id}
+                    onClick={() => selectFailureForDiagnosis(f.id)}
+                    className="hover:bg-zinc-800/40 cursor-pointer transition-colors group"
+                  >
+                    <td className="px-5 py-3 font-mono font-medium text-emerald-400 group-hover:underline">
+                      {f.id}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-white group-hover:text-emerald-400 transition-colors">
+                      {f.testCase}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-300 font-mono text-[11px]">{f.type}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                          f.severity === 'High' || f.severity === 'Critical'
+                            ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                            : f.severity === 'Medium'
+                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            : 'bg-zinc-800 text-zinc-400'
+                        }`}
+                      >
+                        {f.severity}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-[11px] text-zinc-400">{f.detectedTime}</td>
+                    <td className="px-4 py-3 text-zinc-400 text-[11px] max-w-xs truncate">{f.diagnosis}</td>
+                    <td className="px-4 py-3 text-zinc-400 font-mono text-[11px]">{f.healingAction}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono ${
+                          f.status === 'Resolved'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 animate-pulse-purple'
+                        }`}
+                      >
+                        {f.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button className="text-[11px] font-mono text-emerald-400 hover:underline flex items-center justify-center space-x-1">
+                        <span>Diagnose</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-8 text-center text-zinc-400 space-y-2">
+            <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+            <p className="text-xs text-white font-medium">No Anomaly Records</p>
+            <p className="text-xs text-zinc-500">
+              Zero failure logs found for model {selectedModel.name}.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

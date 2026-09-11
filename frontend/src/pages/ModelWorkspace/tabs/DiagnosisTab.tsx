@@ -9,8 +9,20 @@ export const DiagnosisTab: React.FC = () => {
 
   if (!selectedModel) return null;
 
-  const currentFailureId = selectedFailureId || 'FAIL-0832';
-  const diagnosis = diagnosesMap[currentFailureId] || diagnosesMap['FAIL-0832'];
+  const currentFailureId = selectedFailureId || '';
+  const diagnosis = currentFailureId ? diagnosesMap[currentFailureId] : null;
+
+  if (!diagnosis) {
+    return (
+      <div className="sentinel-card p-12 text-center space-y-3">
+        <SearchCode className="w-10 h-10 text-emerald-400 mx-auto" />
+        <h2 className="text-sm font-semibold text-white">No Failure Selected for Diagnosis</h2>
+        <p className="text-xs text-zinc-400 max-w-md mx-auto">
+          Please select a failure anomaly from the <strong>Failures</strong> or <strong>Dashboard</strong> tab for exact model <span className="text-emerald-400 font-mono">{selectedModel.name}</span> to view deep-dive root cause traces and self-healing recommendations.
+        </p>
+      </div>
+    );
+  }
 
   const handleApplyFix = () => {
     setIsApplyingFix(true);
