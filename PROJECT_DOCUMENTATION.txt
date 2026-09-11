@@ -1,0 +1,213 @@
+================================================================================
+          SENTINEL — Autonomous LLMOps & Self-Healing Platform
+                        Complete Technical Overview
+                               Version 2.0.0
+================================================================================
+
+1. PROJECT SUMMARY & MISSION
+--------------------------------------------------------------------------------
+SENTINEL is an enterprise-grade LLMOps, evaluation, and autonomous self-healing
+desktop platform for production Large Language Model (LLM) deployments.
+
+It provides end-to-end monitoring for production prompts and completions,
+calculates real-time metrics (Faithfulness, Hallucination Risk, Correctness,
+Toxicity, and Latency), automatically diagnoses root causes for low-quality
+responses, and patches system instructions on the fly without human intervention.
+
+Key Objectives:
+- Eliminate hallucination risks and prompt drift in production LLM applications.
+- Provide continuous real-time quality monitoring across cloud & local models.
+- Offer automated failure diagnosis and self-healing prompt recovery.
+- Deliver a premium, native desktop application (Windows 64-bit) for developers.
+
+
+2. SYSTEM ARCHITECTURE & CORE PIPELINES
+--------------------------------------------------------------------------------
+SENTINEL is built with a decoupled architecture consisting of four core layers:
+
+  [ 1. Desktop UI ]   --> Native Electron + React 19 + TypeScript Application.
+  [ 2. API Gateway ]  --> FastAPI Python 3.12 Server (Async REST Endpoints).
+  [ 3. Evaluation ]   --> Multi-Metric AI Scoring & Failure Diagnostic Engine.
+  [ 4. Self-Healing ] --> Autonomous Prompt Patching & Verification Gate.
+
+Architecture Flow:
+1. Ingestion: Prompts and completions are ingested via SDK decorator or REST API.
+2. Evaluation: The Evaluation Engine scores responses across 6 core metrics.
+3. Classification: If quality falls below threshold, Failure Classifier identifies
+   the root cause (Prompt Quality, Context Drift, or Model Alignment).
+4. Self-Healing: The Healer generates patched system prompt candidates.
+5. Verification: Candidate prompts are verified against reference golden test cases.
+6. Promotion: Improved prompts (+6.7% quality margin) are promoted to production.
+
+
+3. AI / MLOPS EVALUATION & DIAGNOSIS ENGINE
+--------------------------------------------------------------------------------
+The evaluation layer (`ai/evaluation/`) assesses responses in real time:
+
+- Faithfulness Scorer: Measures context grounding and claim overlap.
+- Hallucination Risk Scorer: Quantifies ungrounded factual assertions (0%-100%).
+- Correctness Scorer: Computes semantic alignment with golden reference answers.
+- Consistency Scorer: Evaluates response variance across repeat queries.
+- Latency & Toxicity Scorers: Monitors SLA compliance and safety guidelines.
+
+Failure Diagnosis Types:
+1. PROMPT_QUALITY: Output missed instructions due to vague or ambiguous prompts.
+2. CONTEXT_DRIFT: Information missing or outdated in retrieved RAG context.
+3. MODEL_ALIGNMENT: Model failed formatting, reasoning, or guardrail constraints.
+
+
+4. AUTONOMOUS SELF-HEALING ENGINE
+--------------------------------------------------------------------------------
+The self-healing module (`ai/healing/`) automatically remedies model failures:
+
+- Prompt Healer: Generates patched system instructions with strict constraints.
+- RAG Recovery Engine: Injects domain guidelines and context formatting rules.
+- Verification Gate: Runs golden test suites on patched candidate prompts.
+- Version Promotion: Automatically registers and promotes verified prompt patches
+  to active status in the Prompt Version Registry.
+
+
+5. LLM PROVIDER INTEGRATIONS & CHAT ENGINE
+--------------------------------------------------------------------------------
+Supported Providers:
+- Google Gemini API: Dynamic endpoint discovery (`models?key=KEY`) with smart candidate
+  resolution (`gemini-flash-latest`, `gemini-pro-latest`) preventing legacy HTTP 404s.
+- OpenAI & Custom API Proxies: Full support for GPT-4o, GPT-4o-mini, and REST proxies.
+- Local Ollama Daemon: Integrates with `http://localhost:11434` for offline models
+  (Llama 3.1, Mistral, Phi-3).
+
+ChatGPT-Style Multi-Session Chat:
+- Multi-session chat management with individual conversation histories.
+- Model workspace isolation per connected API (`connected_api_id`).
+- Prompt version dropdown selector allowing live chat testing against active prompt patches.
+
+
+6. BACKEND FASTAPI PLATFORM & DATABASE
+--------------------------------------------------------------------------------
+The backend server (`backend/sentinel/`) is powered by FastAPI and Async SQLAlchemy.
+
+Database Schema (`sentinel.db` SQLite / PostgreSQL):
+- Developers: User authentication and token management.
+- ConnectedApi: Model connection registry (ID, Name, Provider, Base URL, Encrypted Key).
+- RequestLog: Production ingestion logs (Input, Output, Expected, Latency, Scores).
+- TestSuite & TestCase: Reference golden evaluation benchmarks.
+- Failure & Diagnosis: Diagnostic failure logs and evidence metrics.
+- HealingEvent: Self-healing history, candidate prompts, and score diffs.
+- PromptVersion: Prompt versioning registry (v1.0 baseline, v1.4 active healed).
+
+Key REST Endpoints:
+- `POST /api/v1/requests/ingest`  --> Request ingestion & real-time evaluation.
+- `GET  /api/v1/apis/`            --> Connected model management.
+- `GET  /api/v1/dashboard/global` --> Aggregated cross-model metrics.
+- `POST /api/v1/healing/trigger`  --> Autonomous healing trigger.
+- `GET  /api/v1/evaluations/`     --> Test suite management & runs.
+
+
+7. FRONTEND DESKTOP APPLICATION (ELECTRON + REACT)
+--------------------------------------------------------------------------------
+The user interface (`frontend/`) is built with React 19, Tailwind CSS, Lucide icons,
+Recharts, and Electron 34.
+
+Desktop Shell:
+- Glassmorphism dark mode aesthetic `#09090b`.
+- Top Header with global model search, environment status, and real hardware RAM monitor.
+- Left Sidebar for connected model switching and modal triggers.
+
+Workspace Tabs:
+1. Global Dashboard: Overview of all connected endpoints, health, and aggregate charts.
+2. Individual Dashboard: Specific metrics, latency trends, and failure distribution.
+3. Chat Tab: ChatGPT-style multi-session conversation interface with prompt selection.
+4. Playground: Interactive prompt testing environment with golden dataset evaluation.
+5. Evaluations Tab: Golden test suite creation and benchmark execution runs.
+6. Failures Tab: Filterable production failure logs with severity indicators.
+7. Diagnosis Tab: Diagnostic evidence cards detailing root-cause reasoning.
+8. Healing Tab: Self-healing history timeline and candidate prompt promotion diffs.
+9. Requests Tab: Full raw ingestion logs with latency, score, and context inspector.
+10. Experiments Tab: A/B testing comparison between baseline and healed prompt versions.
+11. Prompts Tab: Version control registry for system prompt iterations.
+
+
+8. PYTHON SDK (`sentinel-mlops` v2.0.0)
+--------------------------------------------------------------------------------
+The Python SDK (`sdk/sentinel_sdk/`) enables 1-line integration:
+
+Installation:
+  pip install -e .
+
+Usage:
+  import sentinel_sdk as sentinel
+
+  sentinel.init(api_key="sk_sentinel_dev", base_url="http://localhost:8000")
+
+  @sentinel.monitor
+  def predict(prompt: str):
+      return "Model completion"
+
+
+9. REPOSITORY DIRECTORY STRUCTURE
+--------------------------------------------------------------------------------
+Sentinel/
+├── ai/                        # AI Core Services
+│   ├── evaluation/            # Multi-metric evaluation engine & scorers
+│   ├── diagnosis/             # Failure classifier & reasoning module
+│   ├── healing/               # Self-healing prompt patcher & verifier
+│   └── llm/                   # Ollama local client & provider connectors
+├── backend/                   # FastAPI Backend Server
+│   ├── sentinel/
+│   │   ├── api/routes/        # REST API endpoints
+│   │   ├── core/              # Config, security, Fernet encryption
+│   │   └── database/          # SQLAlchemy async models & database init
+│   ├── requirements.txt       # Python dependencies
+│   └── sentinel.db            # Local SQLite database
+├── frontend/                  # Electron + React Desktop App
+│   ├── electron/main.js       # Electron main window process
+│   ├── src/
+│   │   ├── components/        # UI Shell, Header, Sidebar, Modals
+│   │   ├── context/           # SentinelContext state & API execution
+│   │   ├── pages/             # Global Dashboard & Workspace Tabs
+│   │   ├── services/          # API service client
+│   │   └── types/             # TypeScript type definitions
+│   └── package.json           # Frontend dependencies & build scripts
+├── sdk/                       # Python SDK (`sentinel-mlops`)
+│   └── sentinel_sdk/          # SentinelClient & @sentinel.monitor decorator
+├── scripts/                   # CI Evaluation Gate scripts
+├── pyproject.toml             # Python build spec
+├── start_sentinel.bat         # 1-Click Windows Launcher Script
+└── README.md                  # Project Documentation
+
+
+10. LAUNCH & DEPLOYMENT INSTRUCTIONS
+--------------------------------------------------------------------------------
+1-Click Windows Startup:
+  Double-click `start_sentinel.bat` in the project root.
+
+Desktop Executable:
+  Launch `frontend/release/win-unpacked/sentinel-desktop.exe`.
+
+Manual CLI Startup:
+  - Backend:  python -m uvicorn sentinel.app:app --host 127.0.0.1 --port 8000 --app-dir backend
+  - Frontend: cd frontend && npm run dev
+
+================================================================================
+11. 16-PHASE MASTER IMPLEMENTATION MATRIX
+================================================================================
+Phase 1: Database Environment & Migrations (Alembic DDL + Benchmark Seed Script) [COMPLETE]
+Phase 2: Redis Worker System & Event-Driven Async Pipeline (RedisJobManager + Workers) [COMPLETE]
+Phase 3: Evaluation Engine Hardening & 9 Structured Metrics [COMPLETE]
+Phase 4: Multi-Signal Failure Diagnosis & Historical Weakness Analysis [COMPLETE]
+Phase 5: End-to-End RAG Evaluation Pipeline (Query Expansion & Reranking) [COMPLETE]
+Phase 6: Self-Healing Engine, Verification Gates & A/B Experimentation [COMPLETE]
+Phase 7: MLflow Tracking, DVC Dataset Versioning & Reusable Services [COMPLETE]
+Phase 8: CI/CD Quality Gate & GitHub Actions Evaluation Workflow [COMPLETE]
+Phase 9: Testing Strategy & Golden Regression Suite (`sentinel evaluate regression`) [COMPLETE]
+Phase 10: Observability, Health Monitoring & Configurable Alerting System [COMPLETE]
+Phase 11: Security Hardening, Secret Management & Redaction [COMPLETE]
+Phase 12: Reusable Research Benchmark Framework (8 Categories, 10,000+ Scalable) [COMPLETE]
+Phase 13: Baseline Experiment & System Comparison Study (Configs A through E) [COMPLETE]
+Phase 14: Component Ablation Study Framework (7 Component Configurations) [COMPLETE]
+Phase 15: Research Result Artifact Generator & Academic Paper Draft [COMPLETE]
+Phase 16: Final Desktop Packaging, Documentation & System Integration [COMPLETE]
+
+================================================================================
+                 Report Generated Successfully for SENTINEL v2.0.0
+================================================================================
