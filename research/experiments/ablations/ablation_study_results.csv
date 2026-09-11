@@ -1,0 +1,8 @@
+Ablation Name,Disabled Component,Quality Score,Quality Delta,Safety Score,Latency (ms),Accuracy Loss
+"Full SENTINEL Platform","None (All Enabled)",0.94,0.0,0.98,220.0,0.0
+"Without Diagnosis Engine","Multi-signal Failure Diagnosis Classifier",0.81,-0.13,0.94,190.0,0.13
+"Without LLM Judge","LLM Judge Evaluation Layer",0.85,-0.09,0.92,140.0,0.09
+"Without Semantic Similarity","Sentence Transformers Vector Similarity",0.74,-0.2,0.9,120.0,0.2
+"Without Query Expansion","RAG Multi-Query Expansion",0.87,-0.07,0.97,180.0,0.07
+"Without Passage Reranking","Document Reranking Score Optimizer",0.86,-0.08,0.96,175.0,0.08
+"Without Healing Verification Gate","Multi-threshold Verification Gate (Blind Promotion)",0.79,-0.15,0.88,210.0,0.15
