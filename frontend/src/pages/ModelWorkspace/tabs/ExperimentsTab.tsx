@@ -8,8 +8,7 @@ export const ExperimentsTab: React.FC = () => {
 
   if (!selectedModel) return null;
 
-  const experiments: ExperimentData[] =
-    experimentsMap[selectedModel.id] || experimentsMap['model-2'] || [];
+  const experiments: ExperimentData[] = experimentsMap[selectedModel.id] || [];
 
   return (
     <div className="space-y-6 select-none">
@@ -30,7 +29,8 @@ export const ExperimentsTab: React.FC = () => {
 
       {/* Experiments List */}
       <div className="space-y-4">
-        {experiments.map((exp) => (
+        {experiments.length > 0 ? (
+          experiments.map((exp) => (
           <div key={exp.id} className="sentinel-card p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div className="flex items-center space-x-3">
@@ -99,7 +99,16 @@ export const ExperimentsTab: React.FC = () => {
               </div>
             </div>
           </div>
-        ))}
+        ))
+      ) : (
+        <div className="sentinel-card p-12 text-center space-y-3">
+          <GitCompare className="w-10 h-10 text-emerald-400 mx-auto" />
+          <h3 className="text-sm font-semibold text-white">No Active A/B Experiments</h3>
+          <p className="text-xs text-zinc-400 max-w-md mx-auto">
+            Click "New A/B Experiment" to compare candidate system prompt variations and automated prompt patches against baseline performance for <span className="text-emerald-400 font-mono">{selectedModel.name}</span>.
+          </p>
+        </div>
+      )}
       </div>
     </div>
   );

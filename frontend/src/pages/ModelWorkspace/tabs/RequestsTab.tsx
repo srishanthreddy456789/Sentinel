@@ -9,8 +9,17 @@ export const RequestsTab: React.FC = () => {
 
   if (!selectedModel) return null;
 
-  const requests: RequestLog[] =
-    requestsMap[selectedModel.id] || requestsMap['model-2'] || [];
+  const requests: RequestLog[] = requestsMap[selectedModel.id] || [];
+
+  const totalReqs = requests.length || selectedModel.requests;
+  const latencies = requests.map(r => r.latency).sort((a, b) => a - b);
+  const p95Idx = Math.floor(latencies.length * 0.95);
+  const p99Idx = Math.floor(latencies.length * 0.99);
+
+  const p95Latency = latencies.length ? `${latencies[p95Idx]}s` : `${selectedModel.latency}s`;
+  const p99Latency = latencies.length ? `${latencies[p99Idx]}s` : `${(selectedModel.latency * 1.3).toFixed(2)}s`;
+  const failedReqs = requests.filter(r => r.status !== 'Success').length;
+  const errorRate = totalReqs ? Number(((failedReqs / totalReqs) * 100).toFixed(2)) : 0.0;
 
   return (
     <div className="space-y-6 select-none">
@@ -18,7 +27,7 @@ export const RequestsTab: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="sentinel-card p-3.5">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">TOTAL REQUESTS</span>
-          <div className="mt-1 text-xl font-semibold font-mono text-white">{selectedModel.requests.toLocaleString()}</div>
+          <div className="mt-1 text-xl font-semibold font-mono text-white">{totalReqs.toLocaleString()}</div>
         </div>
 
         <div className="sentinel-card p-3.5">
@@ -28,17 +37,17 @@ export const RequestsTab: React.FC = () => {
 
         <div className="sentinel-card p-3.5">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">P95 LATENCY</span>
-          <div className="mt-1 text-xl font-semibold font-mono text-cyan-400">1.82s</div>
+          <div className="mt-1 text-xl font-semibold font-mono text-cyan-400">{p95Latency}</div>
         </div>
 
         <div className="sentinel-card p-3.5">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">P99 LATENCY</span>
-          <div className="mt-1 text-xl font-semibold font-mono text-zinc-300">2.41s</div>
+          <div className="mt-1 text-xl font-semibold font-mono text-zinc-300">{p99Latency}</div>
         </div>
 
         <div className="sentinel-card p-3.5">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">ERROR RATE</span>
-          <div className="mt-1 text-xl font-semibold font-mono text-emerald-400">0.12%</div>
+          <div className="mt-1 text-xl font-semibold font-mono text-emerald-400">{errorRate}%</div>
         </div>
       </div>
 
@@ -52,56 +61,66 @@ export const RequestsTab: React.FC = () => {
           <span className="text-[10px] font-mono text-emerald-400">● Streaming</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-zinc-300">
-            <thead className="bg-[#09090b] text-[10px] uppercase font-semibold text-zinc-500 border-b border-zinc-800 font-mono">
-              <tr>
-                <th className="px-5 py-2.5">Timestamp</th>
-                <th className="px-4 py-2.5">Request ID</th>
-                <th className="px-4 py-2.5">Model</th>
-                <th className="px-4 py-2.5 text-right">Latency</th>
-                <th className="px-4 py-2.5 text-right">Quality</th>
-                <th className="px-4 py-2.5">Status</th>
-                <th className="px-4 py-2.5 text-center">Inspect</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60 font-sans">
-              {requests.map((req) => (
-                <tr
-                  key={req.id}
-                  onClick={() => setSelectedReq(req)}
-                  className="hover:bg-zinc-800/40 cursor-pointer transition-colors group"
-                >
-                  <td className="px-5 py-3 font-mono text-[11px] text-zinc-400">{req.timestamp}</td>
-                  <td className="px-4 py-3 font-mono font-medium text-emerald-400 group-hover:underline">
-                    {req.id}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-[11px] text-zinc-300">{req.model}</td>
-                  <td className="px-4 py-3 text-right font-mono text-zinc-300">{req.latency}s</td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold text-emerald-400">
-                    {req.quality}%
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono ${
-                        req.status === 'Success'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                      }`}
-                    >
-                      {req.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <button className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center justify-center space-x-1 mx-auto">
-                      <Eye className="w-3.5 h-3.5" />
-                    </button>
-                  </td>
+        {requests.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-zinc-300">
+              <thead className="bg-[#09090b] text-[10px] uppercase font-semibold text-zinc-500 border-b border-zinc-800 font-mono">
+                <tr>
+                  <th className="px-5 py-2.5">Timestamp</th>
+                  <th className="px-4 py-2.5">Request ID</th>
+                  <th className="px-4 py-2.5">Model</th>
+                  <th className="px-4 py-2.5 text-right">Latency</th>
+                  <th className="px-4 py-2.5 text-right">Quality</th>
+                  <th className="px-4 py-2.5">Status</th>
+                  <th className="px-4 py-2.5 text-center">Inspect</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/60 font-sans">
+                {requests.map((req) => (
+                  <tr
+                    key={req.id}
+                    onClick={() => setSelectedReq(req)}
+                    className="hover:bg-zinc-800/40 cursor-pointer transition-colors group"
+                  >
+                    <td className="px-5 py-3 font-mono text-[11px] text-zinc-400">{req.timestamp}</td>
+                    <td className="px-4 py-3 font-mono font-medium text-emerald-400 group-hover:underline">
+                      {req.id}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-[11px] text-zinc-300">{req.model}</td>
+                    <td className="px-4 py-3 text-right font-mono text-zinc-300">{req.latency}s</td>
+                    <td className="px-4 py-3 text-right font-mono font-semibold text-emerald-400">
+                      {req.quality}%
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono ${
+                          req.status === 'Success'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                        }`}
+                      >
+                        {req.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center justify-center space-x-1 mx-auto">
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-8 text-center text-zinc-400 space-y-2">
+            <Activity className="w-8 h-8 text-emerald-400 mx-auto" />
+            <p className="text-xs text-white font-medium">No Live Request Traffic Recorded</p>
+            <p className="text-xs text-zinc-500">
+              Send messages via Chat or Playground to start logging production request traces for {selectedModel.name}.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Request Inspection Modal */}

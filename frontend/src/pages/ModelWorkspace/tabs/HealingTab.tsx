@@ -9,8 +9,12 @@ export const HealingTab: React.FC = () => {
 
   if (!selectedModel) return null;
 
-  const healingRecords: HealingRecord[] =
-    healingMap[selectedModel.id] || healingMap['model-2'] || [];
+  const healingRecords: HealingRecord[] = healingMap[selectedModel.id] || [];
+
+  const totalAttempts = healingRecords.length;
+  const successfulFixes = healingRecords.filter(r => r.status === 'Verified' || r.status === 'Promoted').length;
+  const unresolvedFixes = totalAttempts - successfulFixes;
+  const successRate = totalAttempts ? Number(((successfulFixes / totalAttempts) * 100).toFixed(1)) : 100.0;
 
   const [selectedHealing, setSelectedHealing] = useState<HealingRecord | null>(
     healingRecords[0] || null
@@ -34,7 +38,7 @@ export const HealingTab: React.FC = () => {
             <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">HEALING ATTEMPTS</span>
             <Zap className="w-4 h-4 text-purple-400" />
           </div>
-          <div className="mt-1 text-xl font-semibold font-mono text-white">42</div>
+          <div className="mt-1 text-xl font-semibold font-mono text-white">{totalAttempts}</div>
         </div>
 
         <div className="sentinel-card p-3.5">
@@ -42,7 +46,7 @@ export const HealingTab: React.FC = () => {
             <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">SUCCESSFUL FIXES</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="mt-1 text-xl font-semibold font-mono text-emerald-400">33</div>
+          <div className="mt-1 text-xl font-semibold font-mono text-emerald-400">{successfulFixes}</div>
         </div>
 
         <div className="sentinel-card p-3.5">
@@ -50,7 +54,7 @@ export const HealingTab: React.FC = () => {
             <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">UNRESOLVED / REJECTED</span>
             <RotateCcw className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="mt-1 text-xl font-semibold font-mono text-zinc-400">9</div>
+          <div className="mt-1 text-xl font-semibold font-mono text-zinc-400">{unresolvedFixes}</div>
         </div>
 
         <div className="sentinel-card p-3.5">
@@ -58,7 +62,7 @@ export const HealingTab: React.FC = () => {
             <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">SUCCESS RATE</span>
             <TrendingUp className="w-4 h-4 text-purple-400" />
           </div>
-          <div className="mt-1 text-xl font-semibold font-mono text-purple-400">78.6%</div>
+          <div className="mt-1 text-xl font-semibold font-mono text-purple-400">{successRate}%</div>
         </div>
       </div>
 

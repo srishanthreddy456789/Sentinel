@@ -8,21 +8,22 @@ export const PromptsTab: React.FC = () => {
 
   if (!selectedModel) return null;
 
-  const promptList: PromptVersion[] =
-    promptsMap[selectedModel.id] || promptsMap['model-2'] || [];
+  const promptList: PromptVersion[] = promptsMap[selectedModel.id] || [];
 
-  const [activePrompt, setActivePrompt] = useState<PromptVersion>(
-    promptList[0] || {
-      id: 'P-104',
-      modelId: selectedModel.id,
-      version: 'v1.4',
-      systemPrompt: 'You are an expert customer support agent. Rely STRICTLY on provided context chunks.',
-      quality: 97.1,
-      hallucination: 2.8,
-      created: '2026-08-25',
-      status: 'Active',
-    }
-  );
+  const defaultPrompt: PromptVersion = {
+    id: `P-${selectedModel.id}-1.0`,
+    modelId: selectedModel.id,
+    version: 'v1.0',
+    systemPrompt: `You are a helpful AI assistant powering ${selectedModel.name}. Answer accurately based strictly on provided ground truth context.`,
+    quality: selectedModel.quality,
+    hallucination: 0.0,
+    created: new Date().toISOString().split('T')[0],
+    status: 'Active',
+  };
+
+  const activePrompts = promptList.length > 0 ? promptList : [defaultPrompt];
+
+  const [activePrompt, setActivePrompt] = useState<PromptVersion>(activePrompts[0]);
 
   return (
     <div className="space-y-6 select-none">
@@ -50,7 +51,7 @@ export const PromptsTab: React.FC = () => {
           </h3>
 
           <div className="space-y-2">
-            {promptList.map((p) => {
+            {activePrompts.map((p) => {
               const isSelected = activePrompt.id === p.id;
               return (
                 <div
