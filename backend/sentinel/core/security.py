@@ -73,3 +73,36 @@ def generate_sdk_api_key() -> Tuple[str, str, str]:
 
 def hash_sdk_api_key(raw_key: str) -> str:
     return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+
+def mask_api_key(api_key: str) -> str:
+    """Masks API key for safe display/logging (e.g. sk_sentinel_1234...5678)."""
+    if not api_key:
+        return ""
+    if len(api_key) <= 8:
+        return "****"
+    return f"{api_key[:12]}****{api_key[-4:]}"
+
+import re
+
+def redact_secrets(data: Any) -> Any:
+    """Recursively redacts sensitive API keys, tokens, and passwords from logs or dict objects."""
+    if isinstance(data, str):
+        # Redact bearer tokens and sk_ keys
+        redacted = re.sub(r'(sk_sentinel_[a-zA-Z0-9]{8})[a-zA-Z0-9]+', r'\1****', data)
+        redacted = re.sub(r'(sk-[a-zA-Z0-9]{8})[a-zA-Z0-9]+', r'\1****', redacted)
+        redacted = re.sub(r'(Bearer\s+[a-zA-Z0-9\._\-]{8})[a-zA-Z0-9\._\-]+', r'\1****', redacted)
+        return redacted
+    elif isinstance(data, dict):
+        new_dict = {}
+        for k, v in data.items():
+            if any(secret_word in k.lower() for secret_word in ["password", "secret", "token", "api_key", "key_hash"]):
+                if isinstance(v, str) and v:
+                    new_dict[k] = mask_api_key(v)
+                else:
+                    new_dict[k] = "[REDACTED]"
+            else:
+                new_dict[k] = redact_secrets(v)
+        return new_dict
+    elif isinstance(data, list):
+        return [redact_secrets(item) for item in data]
+    return data
