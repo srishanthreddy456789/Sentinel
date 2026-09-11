@@ -2,9 +2,11 @@ export type ModelHealth = 'Healthy' | 'Degraded' | 'Healing' | 'Critical';
 
 export type ApiProvider =
   | 'SENTINEL Free Local Model'
+  | 'SENTINEL Local Model'
   | 'OpenAI'
   | 'Anthropic'
   | 'Google Gemini'
+  | 'Google AI'
   | 'Mistral'
   | 'Ollama'
   | 'Hugging Face'
@@ -46,6 +48,8 @@ export interface EvaluationRun {
   duration: string;
   status: 'Passed' | 'Failed' | 'Warning' | 'Running';
   timestamp: string;
+  hallucination?: number;
+  faithfulness?: number;
 }
 
 export type FailureType =
@@ -73,6 +77,7 @@ export interface FailureRecord {
   question?: string;
   generatedAnswer?: string;
   expectedAnswer?: string;
+  healingAction?: string;
 }
 
 export interface DiagnosisEvidence {
@@ -104,7 +109,7 @@ export interface HealingRecord {
   beforeQuality: number;
   afterQuality: number;
   improvement: number;
-  status: 'Promoted' | 'Testing' | 'Pending' | 'Rolled Back';
+  status: 'Promoted' | 'Testing' | 'Pending' | 'Rolled Back' | 'Verified';
   timestamp: string;
 }
 
@@ -172,6 +177,15 @@ export interface ChatMessage {
   hallucinationRisk?: number;
   retrievedContext?: string;
   tokens?: number;
+}
+
+export interface ChatSession {
+  id: string;
+  modelId: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: ChatMessage[];
 }
 
 export type WorkspaceTab =
