@@ -1,0 +1,47 @@
+name: SENTINEL CI/CD Evaluation Gate & Testing Pipeline
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  evaluation-and-quality-gate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache Python Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install sentence-transformers pytest redis mlflow
+
+      - name: Run Backend Unit & Module Integration Tests
+        run: |
+          python backend/tests/test_phase2_worker.py
+          python backend/tests/test_phase3_evaluation.py
+          python backend/tests/test_phase4_diagnosis.py
+          python backend/tests/test_phase5_rag.py
+          python backend/tests/test_phase6_healing_experiment.py
+          python backend/tests/test_phase7_mlflow_dvc.py
+
+      - name: Run SENTINEL CI Evaluation Quality Gate
+        run: |
+          python scripts/evaluation_gate.py --max-regression 0.02 --max-latency-inc 0.10 --min-safety 0.95
