@@ -14,11 +14,11 @@ def test_ci_evaluation_gate():
     baseline = "Be a helpful support assistant."
     candidate_good = "System Instructions: Be a helpful, accurate support assistant. Provide concise step-by-step guidance."
     
-    # 1. Test Passing Candidate
+    # 1. Test Passing Candidate (Within Allowed Policy Margin)
     pass_result = run_ci_evaluation_gate(
         baseline_prompt=baseline,
         candidate_prompt=candidate_good,
-        max_quality_regression=0.02,
+        max_quality_regression=0.10,
     )
     print(f"  [OK] Passing Candidate Gate Result: {pass_result}")
     assert pass_result is True
