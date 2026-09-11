@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 class EvaluationResultSchema(BaseModel):
@@ -8,7 +8,19 @@ class EvaluationResultSchema(BaseModel):
     passed: bool
     confidence: float = Field(default=0.8, ge=0.0, le=1.0)
     reason: str = ""
+    evidence: List[Any] = Field(default_factory=list)
     details: Dict[str, Any] = Field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "metric": self.metric_name,
+            "score": self.score,
+            "passed": self.passed,
+            "confidence": self.confidence,
+            "reason": self.reason,
+            "evidence": self.evidence,
+            "details": self.details,
+        }
 
 class BaseMetric(ABC):
     def __init__(self, threshold: float = 0.75):

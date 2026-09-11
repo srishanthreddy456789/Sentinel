@@ -37,6 +37,24 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
     ]
 
+    # Evaluation Configurable Thresholds
+    EVAL_CORRECTNESS_THRESHOLD: float = 0.75
+    EVAL_FAITHFULNESS_THRESHOLD: float = 0.60
+    EVAL_HALLUCINATION_THRESHOLD: float = 0.30
+    EVAL_TOXICITY_THRESHOLD: float = 0.10
+    EVAL_CONSISTENCY_THRESHOLD: float = 0.70
+    EVAL_LATENCY_SLA_MS: float = 2000.0
+    RAG_SIMILARITY_THRESHOLD: float = 0.60
+
+    # Diagnosis Configurable Thresholds
+    MODEL_WEAKNESS_MIN_SAMPLES: int = 30
+    DIAGNOSIS_MIN_CONFIDENCE: float = 0.70
+
+    # Self-Healing Configurable Thresholds
+    HEALING_MIN_IMPROVEMENT: float = 0.03
+    HEALING_MAX_LATENCY_INCREASE: float = 0.10
+    HEALING_AUTO_PROMOTE: bool = False
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
