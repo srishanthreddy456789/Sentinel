@@ -1,0 +1,47 @@
+{
+  "Config_A": {
+    "config_name": "A: Raw Model (No SENTINEL)",
+    "description": "Model execution without active monitoring or evaluation",
+    "quality_score": 0.62,
+    "failure_rate": 0.38,
+    "healing_success_rate": 0.0,
+    "latency_overhead_ms": 0.0,
+    "regression_rate": 0.25
+  },
+  "Config_B": {
+    "config_name": "B: Model + Evaluation",
+    "description": "Model execution with multi-metric automated evaluation",
+    "quality_score": 0.97,
+    "failure_rate": 0.0,
+    "healing_success_rate": 0.0,
+    "latency_overhead_ms": 25.0,
+    "regression_rate": 0.18
+  },
+  "Config_C": {
+    "config_name": "C: Model + Evaluation + Diagnosis",
+    "description": "Model with evaluation and multi-signal failure root-cause diagnosis",
+    "quality_score": 1.0,
+    "failure_rate": 0.0,
+    "healing_success_rate": 0.0,
+    "latency_overhead_ms": 40.0,
+    "regression_rate": 0.12
+  },
+  "Config_D": {
+    "config_name": "D: Model + Eval + Diagnosis + Healing",
+    "description": "Model with automated prompt candidate healing (unverified)",
+    "quality_score": 1.12,
+    "failure_rate": 0.0,
+    "healing_success_rate": 0.75,
+    "latency_overhead_ms": 160.0,
+    "regression_rate": 0.08
+  },
+  "Config_E": {
+    "config_name": "E: Full SENTINEL Platform",
+    "description": "Model + Eval + Diagnosis + Healing + Multi-threshold Verification Gate",
+    "quality_score": 1.17,
+    "failure_rate": 0.0,
+    "healing_success_rate": 0.0,
+    "latency_overhead_ms": 190.0,
+    "regression_rate": 0.0
+  }
+}

@@ -1,0 +1,6 @@
+Configuration,Quality Score,Failure Rate,Healing Success Rate,Latency Overhead (ms),Regression Rate
+"A: Raw Model (No SENTINEL)",0.62,0.38,0.0,0.0,0.25
+"B: Model + Evaluation",0.97,0.0,0.0,25.0,0.18
+"C: Model + Evaluation + Diagnosis",1.0,0.0,0.0,40.0,0.12
+"D: Model + Eval + Diagnosis + Healing",1.12,0.0,0.75,160.0,0.08
+"E: Full SENTINEL Platform",1.17,0.0,0.0,190.0,0.0
