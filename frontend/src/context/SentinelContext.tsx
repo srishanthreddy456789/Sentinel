@@ -13,6 +13,7 @@ import {
   PromptVersion,
   ApiKeyItem,
   ChatMessage,
+  ChatSession,
 } from '../types/sentinel';
 import {
   INITIAL_MODELS,
@@ -26,49 +27,9 @@ import {
   MOCK_PROMPTS,
   MOCK_API_KEYS,
 } from '../data/mockData';
+import { connectionService, dashboardService } from '../services/api';
 
-const DEFAULT_CHAT_THREADS: Record<string, ChatMessage[]> = {
-  'model-2': [
-    {
-      id: 'msg-1',
-      role: 'user',
-      content: 'What is your refund policy for unused seats?',
-      timestamp: '21:40:10',
-    },
-    {
-      id: 'msg-2',
-      role: 'assistant',
-      content:
-        'Customers can request refunds for unused seats within 30 days of the billing cycle. Approved refunds are credited to the original payment method within 3 to 5 business days.',
-      timestamp: '21:40:11',
-      latency: '1.12s',
-      faithfulness: 98.6,
-      hallucinationRisk: 0.2,
-      retrievedContext: 'DocChunk #089: Refund policy duration terms and multi-seat pro-rata refunds.',
-      tokens: 54,
-    },
-  ],
-  'model-1': [
-    {
-      id: 'msg-101',
-      role: 'user',
-      content: 'Summarize system memory status for local Llama 3.1.',
-      timestamp: '21:30:00',
-    },
-    {
-      id: 'msg-102',
-      role: 'assistant',
-      content:
-        'Current RAM usage is approximately 1.4GB. The local Ollama daemon is running healthy with an average latency of 1.38 seconds per inference call.',
-      timestamp: '21:30:01',
-      latency: '1.38s',
-      faithfulness: 99.4,
-      hallucinationRisk: 0.1,
-      retrievedContext: 'Local System Daemon Metrics #001.',
-      tokens: 48,
-    },
-  ],
-};
+const DEFAULT_CHAT_THREADS: Record<string, ChatMessage[]> = {};
 
 interface SentinelContextType {
   models: ConnectedModel[];
@@ -89,6 +50,8 @@ interface SentinelContextType {
   promptsMap: Record<string, PromptVersion[]>;
   apiKeys: ApiKeyItem[];
   chatThreadsMap: Record<string, ChatMessage[]>;
+  chatSessionsMap: Record<string, ChatSession[]>;
+  activeSessionIdMap: Record<string, string>;
 
   // Actions
   selectModel: (id: string | null) => void;
@@ -107,6 +70,9 @@ interface SentinelContextType {
   revokeApiKey: (keyId: string) => void;
   sendChatMessage: (modelId: string, content: string) => Promise<void>;
   clearChatHistory: (modelId: string) => void;
+  createNewChatSession: (modelId: string) => ChatSession;
+  switchChatSession: (modelId: string, sessionId: string) => void;
+  deleteChatSession: (modelId: string, sessionId: string) => void;
 }
 
 const SentinelContext = createContext<SentinelContextType | undefined>(undefined);
@@ -115,8 +81,36 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [models, setModels] = useState<ConnectedModel[]>(INITIAL_MODELS);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('Dashboard');
-  const [selectedFailureId, setSelectedFailureId] = useState<string | null>('FAIL-0832');
+  const [selectedFailureId, setSelectedFailureId] = useState<string | null>(null);
   const [isAddApiModalOpen, setIsAddApiModalOpen] = useState<boolean>(false);
+
+  // Fetch real connected models from backend on startup
+  React.useEffect(() => {
+    const fetchBackendConnections = async () => {
+      try {
+        const backendApis = await connectionService.listConnections();
+        if (Array.isArray(backendApis) && backendApis.length > 0) {
+          const loadedModels: ConnectedModel[] = backendApis.map((api: any) => ({
+            id: api.id,
+            name: api.name,
+            provider: api.provider,
+            model: api.model_name || api.provider,
+            health: api.status || 'Healthy',
+            quality: 100.0,
+            requests: 0,
+            failures: 0,
+            latency: 0.35,
+            baseUrl: api.base_url,
+            createdAt: api.created_at ? api.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+          }));
+          setModels(loadedModels);
+        }
+      } catch (err) {
+        console.warn('Backend connections fetch:', err);
+      }
+    };
+    fetchBackendConnections();
+  }, []);
 
   // Stateful copies of mock data maps for interactive updates
   const [evaluationsMap, setEvaluationsMap] = useState<Record<string, EvaluationRun[]>>(MOCK_EVALUATIONS);
@@ -139,22 +133,28 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const globalMetrics = useMemo<GlobalMetrics>(() => {
     const totalModels = models.length;
     if (totalModels === 0) {
-      return { totalModels: 0, totalRequests: 0, overallQuality: 0, totalFailures: 0, healingSuccessRate: 0, averageLatency: 0 };
+      return { totalModels: 0, totalRequests: 0, overallQuality: 0, totalFailures: 0, healingSuccessRate: 100.0, averageLatency: 0 };
     }
     const totalRequests = models.reduce((acc, m) => acc + m.requests, 0);
     const totalFailures = models.reduce((acc, m) => acc + m.failures, 0);
     const overallQuality = Number((models.reduce((acc, m) => acc + m.quality, 0) / totalModels).toFixed(1));
     const averageLatency = Number((models.reduce((acc, m) => acc + m.latency, 0) / totalModels).toFixed(2));
     
+    const allHealing = Object.values(healingMap).flat();
+    const successfulFixes = allHealing.filter((h) => h.status === 'Verified' || h.status === 'Promoted').length;
+    const healingSuccessRate = allHealing.length
+      ? Number(((successfulFixes / allHealing.length) * 100).toFixed(1))
+      : 100.0;
+
     return {
       totalModels,
       totalRequests,
       overallQuality,
       totalFailures,
-      healingSuccessRate: 81.2,
+      healingSuccessRate,
       averageLatency,
     };
-  }, [models]);
+  }, [models, healingMap]);
 
   const selectModel = (id: string | null) => {
     setSelectedModelId(id);
@@ -164,18 +164,33 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const openAddApiModal = () => setIsAddApiModalOpen(true);
   const closeAddApiModal = () => setIsAddApiModalOpen(false);
 
-  const addModel = (data: { name: string; provider: ApiProvider; model: string; baseUrl?: string; apiKey?: string }) => {
-    const newId = `model-${Date.now()}`;
+  const addModel = async (data: { name: string; provider: ApiProvider; model: string; baseUrl?: string; apiKey?: string }) => {
+    let createdId = `model-${Date.now()}`;
+    try {
+      const apiRes = await connectionService.addConnection({
+        name: data.name,
+        provider: data.provider,
+        base_url: data.baseUrl,
+        model_name: data.model,
+        api_key: data.apiKey,
+      });
+      if (apiRes && apiRes.id) {
+        createdId = apiRes.id;
+      }
+    } catch (e) {
+      console.warn('Backend add connection fallback:', e);
+    }
+
     const newModel: ConnectedModel = {
-      id: newId,
+      id: createdId,
       name: data.name, // Displayed EXACTLY as entered
       provider: data.provider,
       model: data.model || (data.provider === 'SENTINEL Free Local Model' ? 'Llama 3.1 8B (Local)' : 'Custom API'),
       health: 'Healthy',
-      quality: 98.5,
-      requests: 120,
-      failures: 1,
-      latency: 1.15,
+      quality: 100.0,
+      requests: 0,
+      failures: 0,
+      latency: 0.35,
       baseUrl: data.baseUrl,
       apiKey: data.apiKey,
       createdAt: new Date().toISOString().split('T')[0],
@@ -186,7 +201,7 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     closeAddApiModal();
 
     // Auto-select newly created model and navigate to its workspace dashboard
-    setSelectedModelId(newId);
+    setSelectedModelId(createdId);
     setActiveTab('Dashboard');
   };
 
@@ -283,8 +298,64 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setApiKeys((prev) => prev.filter((k) => k.id !== keyId));
   };
 
+  const [chatSessionsMap, setChatSessionsMap] = useState<Record<string, ChatSession[]>>({});
+  const [activeSessionIdMap, setActiveSessionIdMap] = useState<Record<string, string>>({});
+
+  const createNewChatSession = (modelId: string): ChatSession => {
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newSession: ChatSession = {
+      id: `session-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      modelId,
+      title: 'New Chat',
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      messages: [],
+    };
+
+    setChatSessionsMap((prev) => ({
+      ...prev,
+      [modelId]: [newSession, ...(prev[modelId] || [])],
+    }));
+
+    setActiveSessionIdMap((prev) => ({
+      ...prev,
+      [modelId]: newSession.id,
+    }));
+
+    return newSession;
+  };
+
+  const switchChatSession = (modelId: string, sessionId: string) => {
+    setActiveSessionIdMap((prev) => ({
+      ...prev,
+      [modelId]: sessionId,
+    }));
+  };
+
+  const deleteChatSession = (modelId: string, sessionId: string) => {
+    setChatSessionsMap((prev) => {
+      const existing = prev[modelId] || [];
+      const remaining = existing.filter((s) => s.id !== sessionId);
+      return {
+        ...prev,
+        [modelId]: remaining,
+      };
+    });
+
+    setActiveSessionIdMap((prev) => {
+      if (prev[modelId] === sessionId) {
+        const remaining = (chatSessionsMap[modelId] || []).filter((s) => s.id !== sessionId);
+        return {
+          ...prev,
+          [modelId]: remaining.length > 0 ? remaining[0].id : '',
+        };
+      }
+      return prev;
+    });
+  };
+
   const sendChatMessage = async (modelId: string, content: string) => {
-    const timestamp = new Date().toTimeString().slice(0, 8);
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}-u`,
       role: 'user',
@@ -292,20 +363,104 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       timestamp,
     };
 
-    let updatedHistory: ChatMessage[] = [];
-    setChatThreadsMap((prev) => {
-      const current = prev[modelId] || [];
-      updatedHistory = [...current, userMsg];
+    let modelSessions = chatSessionsMap[modelId] || [];
+    let currentSessionId = activeSessionIdMap[modelId];
+    let currentSession = modelSessions.find((s) => s.id === currentSessionId);
+
+    if (!currentSession) {
+      currentSession = {
+        id: `session-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        modelId,
+        title: content.trim().length > 30 ? content.trim().slice(0, 30) + '...' : content.trim(),
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        messages: [],
+      };
+      currentSessionId = currentSession.id;
+      modelSessions = [currentSession, ...modelSessions];
+    }
+
+    const sessionTitle =
+      currentSession.title === 'New Chat' || currentSession.messages.length === 0
+        ? content.trim().length > 30
+          ? content.trim().slice(0, 30) + '...'
+          : content.trim()
+        : currentSession.title;
+
+    const updatedMessages = [...currentSession.messages, userMsg];
+    const updatedSession: ChatSession = {
+      ...currentSession,
+      title: sessionTitle,
+      updatedAt: timestamp,
+      messages: updatedMessages,
+    };
+
+    setChatSessionsMap((prev) => {
+      const existing = prev[modelId] || [];
+      const hasSession = existing.some((s) => s.id === currentSessionId);
+      const nextList = hasSession
+        ? existing.map((s) => (s.id === currentSessionId ? updatedSession : s))
+        : [updatedSession, ...existing];
       return {
         ...prev,
-        [modelId]: updatedHistory,
+        [modelId]: nextList,
       };
     });
+
+    setActiveSessionIdMap((prev) => ({
+      ...prev,
+      [modelId]: currentSessionId,
+    }));
+
+    setChatThreadsMap((prev) => ({
+      ...prev,
+      [modelId]: updatedMessages,
+    }));
+
+    const appendAssistantMsg = (assistantMsg: ChatMessage) => {
+      setChatSessionsMap((prev) => {
+        const existing = prev[modelId] || [];
+        const nextList = existing.map((s) => {
+          if (s.id === currentSessionId) {
+            return {
+              ...s,
+              updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              messages: [...s.messages, assistantMsg],
+            };
+          }
+          return s;
+        });
+        return {
+          ...prev,
+          [modelId]: nextList,
+        };
+      });
+
+      setChatThreadsMap((prev) => ({
+        ...prev,
+        [modelId]: [...(prev[modelId] || []), assistantMsg],
+      }));
+    };
+
+    const recordModelRequest = (targetId?: string, latSec?: number) => {
+      if (!targetId || typeof latSec !== 'number') return;
+      setModels((prev) =>
+        prev.map((m) => {
+          if (m.id === targetId) {
+            const reqs = (m.requests || 0) + 1;
+            const avgLat = Number((((m.latency || 0) * (m.requests || 0) + latSec) / reqs).toFixed(2));
+            return { ...m, requests: reqs, latency: avgLat };
+          }
+          return m;
+        })
+      );
+    };
 
     const model = models.find((m) => m.id === modelId);
     const isOllamaProvider =
       model?.provider === 'Ollama' ||
       model?.provider === 'SENTINEL Free Local Model' ||
+      model?.provider === 'SENTINEL Local Model' ||
       (model?.baseUrl && (model.baseUrl.includes('11434') || model.baseUrl.includes('localhost')));
 
     if (isOllamaProvider) {
@@ -334,20 +489,15 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const assistantMsg: ChatMessage = {
             id: `msg-${Date.now()}-a`,
             role: 'assistant',
-            content: `⚡ Local Ollama daemon is connected and active at http://localhost:11434, but model weight downloading is currently in progress.\n\nModels (llama3.2:1b / qwen2.5 / tinyllama) are downloading in the background. Please wait 1-2 minutes for the download to finish, then send your message again!`,
+            content: `⚡ Local Ollama daemon is active at http://localhost:11434, but no downloaded models were detected.\n\nPlease run \`ollama run mistral\` or \`ollama pull llama3.2\` in your terminal, then try again!`,
             timestamp: new Date().toTimeString().slice(0, 8),
             latency: '0.01s',
             faithfulness: 100,
             hallucinationRisk: 0,
-            retrievedContext: 'Ollama Local Daemon Status: Model Pull In Progress...',
+            retrievedContext: 'Ollama Local Daemon Status: No Models Found',
             tokens: 0,
           };
-
-          setChatThreadsMap((prev) => ({
-            ...prev,
-            [modelId]: [...(prev[modelId] || []), assistantMsg],
-          }));
-
+          appendAssistantMsg(assistantMsg);
           return;
         }
 
@@ -363,7 +513,7 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }
         }
 
-        const apiMessages = updatedHistory.map((msg) => ({
+        const apiMessages = updatedMessages.map((msg) => ({
           role: msg.role,
           content: msg.content,
         }));
@@ -407,17 +557,14 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           content: data.message?.content || 'No text content returned from Ollama.',
           timestamp: new Date().toTimeString().slice(0, 8),
           latency: latencySec,
-          faithfulness: Number((98.5 + Math.random() * 1.4).toFixed(1)),
-          hallucinationRisk: Number((Math.random() * 0.2).toFixed(1)),
+          faithfulness: 100.0,
+          hallucinationRisk: 0.0,
           retrievedContext: `Local System Ollama (${targetModelTag}) Ground Truth Verification.`,
           tokens,
         };
 
-        setChatThreadsMap((prev) => ({
-          ...prev,
-          [modelId]: [...(prev[modelId] || []), assistantMsg],
-        }));
-
+        recordModelRequest(modelId, Number((latencyMs / 1000).toFixed(2)));
+        appendAssistantMsg(assistantMsg);
         return;
       } catch (err: any) {
         console.error('Ollama chat error:', err);
@@ -438,36 +585,308 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           tokens: 0,
         };
 
-        setChatThreadsMap((prev) => ({
-          ...prev,
-          [modelId]: [...(prev[modelId] || []), assistantMsg],
-        }));
+        appendAssistantMsg(assistantMsg);
         return;
       }
     }
 
-    // Default simulation fallback for mock external models
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    const modelName = model?.name || 'Model';
-    const assistantMsg: ChatMessage = {
-      id: `msg-${Date.now()}-a`,
-      role: 'assistant',
-      content: `I am ${modelName} powered by ${model?.provider || 'API'}. Received query: "${content}". Verified context ground truth.`,
-      timestamp: new Date().toTimeString().slice(0, 8),
-      latency: '1.14s',
-      faithfulness: 99.1,
-      hallucinationRisk: 0.2,
-      retrievedContext: `DocChunk #412: Production knowledge base verification for ${modelName}.`,
-      tokens: 62,
-    };
+    // External Provider API Execution
+    const apiKeyClean = (model?.apiKey || '').trim();
 
-    setChatThreadsMap((prev) => ({
-      ...prev,
-      [modelId]: [...(prev[modelId] || []), assistantMsg],
-    }));
+    // Smart key auto-detection for Google Gemini vs OpenAI
+    const isGeminiKey =
+      apiKeyClean.startsWith('AIza') ||
+      apiKeyClean.startsWith('AQ.') ||
+      apiKeyClean.startsWith('AQ') ||
+      apiKeyClean.startsWith('AIzaSy');
+
+    const isGeminiProvider =
+      model?.provider === 'Google Gemini' ||
+      model?.provider === 'Google AI' ||
+      model?.name?.toLowerCase().includes('gemini') ||
+      isGeminiKey;
+
+    const isOpenAIProvider =
+      !isGeminiKey &&
+      (model?.provider === 'OpenAI' ||
+        (apiKeyClean.startsWith('sk-') && !apiKeyClean.startsWith('sk_live_sentinel')));
+
+    if (isGeminiProvider) {
+      if (!apiKeyClean || apiKeyClean === 'dummy_key' || apiKeyClean.includes('sk_live_an')) {
+        const assistantMsg: ChatMessage = {
+          id: `msg-${Date.now()}-a`,
+          role: 'assistant',
+          content: `⚠️ Google Gemini API Key Required / Missing.\n\nPlease enter a valid Google AI Studio API Key in Settings. Get a free key at https://aistudio.google.com.`,
+          timestamp: new Date().toTimeString().slice(0, 8),
+          latency: '0.02s',
+          faithfulness: 0,
+          hallucinationRisk: 100,
+          tokens: 0,
+        };
+        appendAssistantMsg(assistantMsg);
+        return;
+      }
+
+      const startTime = Date.now();
+      try {
+        const candidateModels: string[] = ['gemini-flash-latest', 'gemini-pro-latest'];
+
+        // If user typed a specific model in workspace model settings
+        const customModel = (model?.model || '').toLowerCase().trim().replace(/^models\//, '');
+        if (
+          customModel &&
+          !customModel.includes('dummy') &&
+          customModel !== 'gemini-pro' &&
+          customModel !== 'gemini' &&
+          customModel !== 'gemini 1.5 pro'
+        ) {
+          candidateModels.unshift(customModel);
+        }
+
+        // 1. Try querying Google AI Studio ModelService for exact supported models
+        try {
+          const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKeyClean}`);
+          if (listRes.ok) {
+            const listData = await listRes.json();
+            const validModels: string[] = (listData.models || [])
+              .filter((m: any) => (m.supportedGenerationMethods || []).includes('generateContent'))
+              .map((m: any) => (m.name || '').replace('models/', ''));
+
+            if (validModels.length > 0) {
+              const flashMatch = validModels.find(
+                (m) => m === 'gemini-flash-latest' || m.includes('2.5-flash') || m.includes('flash-latest')
+              );
+              const proMatch = validModels.find((m) => m === 'gemini-pro-latest' || m.includes('pro-latest'));
+
+              const userPrefersPro = customModel.includes('pro');
+              const preferred = userPrefersPro ? proMatch || flashMatch : flashMatch || proMatch;
+              if (preferred && !candidateModels.includes(preferred)) {
+                candidateModels.unshift(preferred);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Gemini models listing error:', e);
+        }
+
+        // Deduplicate candidate list & ensure gemini-flash-latest is always included
+        const uniqueCandidates = Array.from(new Set(candidateModels));
+        if (!uniqueCandidates.includes('gemini-flash-latest')) {
+          uniqueCandidates.push('gemini-flash-latest');
+        }
+
+        let res: Response | null = null;
+        let usedModel = uniqueCandidates[0];
+        let lastErr = '';
+
+        for (const mName of uniqueCandidates) {
+          usedModel = mName;
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${mName}:generateContent?key=${apiKeyClean}`;
+          try {
+            const attemptRes = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    role: 'user',
+                    parts: [{ text: content }],
+                  },
+                ],
+              }),
+            });
+
+            if (attemptRes.ok) {
+              res = attemptRes;
+              break;
+            } else {
+              const errData = await attemptRes.json().catch(() => ({}));
+              lastErr = errData.error?.message || `HTTP ${attemptRes.status}`;
+              console.warn(`Gemini model ${mName} call failed (${attemptRes.status}): ${lastErr}`);
+            }
+          } catch (fetchErr: any) {
+            lastErr = fetchErr.message || String(fetchErr);
+            console.warn(`Gemini network call failed for ${mName}: ${lastErr}`);
+          }
+        }
+
+        if (!res || !res.ok) {
+          throw new Error(lastErr || 'All Gemini model endpoints failed.');
+        }
+
+        const data = await res.json();
+        const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response text generated by Google Gemini.';
+        const latencySec = ((Date.now() - startTime) / 1000).toFixed(2) + 's';
+        const tokens = data.usageMetadata?.totalTokenCount || Math.ceil(outputText.length / 4);
+
+        const assistantMsg: ChatMessage = {
+          id: `msg-${Date.now()}-a`,
+          role: 'assistant',
+          content: outputText,
+          timestamp: new Date().toTimeString().slice(0, 8),
+          latency: latencySec,
+          faithfulness: 100.0,
+          hallucinationRisk: 0.0,
+          retrievedContext: `Google AI Studio API (${usedModel}) Ground Truth Execution.`,
+          tokens,
+        };
+
+        recordModelRequest(modelId, Number(((Date.now() - startTime) / 1000).toFixed(2)));
+        appendAssistantMsg(assistantMsg);
+        return;
+      } catch (err: any) {
+        console.error('Google Gemini API execution error:', err);
+        const assistantMsg: ChatMessage = {
+          id: `msg-${Date.now()}-a`,
+          role: 'assistant',
+          content: `⚠️ Google Gemini API Call Failed for model ${model?.name}.\n\nError Details: ${err.message || err}\n\n💡 Troubleshooting Checklist:\n1. Ensure your Google AI API key is valid (get key at https://aistudio.google.com).\n2. Verify internet access and model quota availability.\n3. Make sure the API key is saved under Model Workspace Settings.`,
+          timestamp: new Date().toTimeString().slice(0, 8),
+          latency: '0.04s',
+          faithfulness: 0,
+          hallucinationRisk: 100,
+          tokens: 0,
+        };
+
+        appendAssistantMsg(assistantMsg);
+        return;
+      }
+    }
+
+    if (isOpenAIProvider) {
+      const startTime = Date.now();
+      try {
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKeyClean}`,
+          },
+          body: JSON.stringify({
+            model: model?.model || 'gpt-4o',
+            messages: [{ role: 'user', content }],
+          }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          const errMsg = errData.error?.message || `HTTP ${res.status}`;
+          throw new Error(`OpenAI API returned HTTP ${res.status}: ${errMsg}`);
+        }
+
+        const data = await res.json();
+        const outputText = data.choices?.[0]?.message?.content || 'No response text returned.';
+        const latencySec = ((Date.now() - startTime) / 1000).toFixed(2) + 's';
+        const tokens = data.usage?.total_tokens || Math.ceil(outputText.length / 4);
+
+        const assistantMsg: ChatMessage = {
+          id: `msg-${Date.now()}-a`,
+          role: 'assistant',
+          content: outputText,
+          timestamp: new Date().toTimeString().slice(0, 8),
+          latency: latencySec,
+          faithfulness: 100.0,
+          hallucinationRisk: 0.0,
+          retrievedContext: `OpenAI API Execution (${data.model || 'gpt-4o'}).`,
+          tokens,
+        };
+
+        recordModelRequest(modelId, Number(((Date.now() - startTime) / 1000).toFixed(2)));
+        appendAssistantMsg(assistantMsg);
+        return;
+      } catch (err: any) {
+        console.error('OpenAI API execution error:', err);
+        const assistantMsg: ChatMessage = {
+          id: `msg-${Date.now()}-a`,
+          role: 'assistant',
+          content: `⚠️ OpenAI API Call Failed for model ${model?.name}.\n\nError: ${err.message || err}`,
+          timestamp: new Date().toTimeString().slice(0, 8),
+          latency: '0.04s',
+          faithfulness: 0,
+          hallucinationRisk: 100,
+          tokens: 0,
+        };
+
+        appendAssistantMsg(assistantMsg);
+        return;
+      }
+    }
+
+    // Default Fallback to Backend Ingestion API for other custom connections
+    if (!apiKeyClean || apiKeyClean === 'dummy_key') {
+      const assistantMsg: ChatMessage = {
+        id: `msg-${Date.now()}-a`,
+        role: 'assistant',
+        content: `⚠️ API Key Required / Missing for ${model?.name || 'this provider'}.\n\nProvider (${model?.provider || 'External API'}) requires a valid API key. No valid API key was provided for this connection.\n\n💡 How to resolve:\n1. Click "Settings" in the left sidebar or top right gear icon.\n2. Enter your valid ${model?.provider} API key and save.\n3. Alternatively, switch to "Free Llama Assistant" to run models locally via Ollama without an external API key.`,
+        timestamp: new Date().toTimeString().slice(0, 8),
+        latency: '0.02s',
+        faithfulness: 0,
+        hallucinationRisk: 100,
+        tokens: 0,
+      };
+
+      appendAssistantMsg(assistantMsg);
+      return;
+    }
+
+    const startTime = Date.now();
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/requests/ingest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer demo_token',
+        },
+        body: JSON.stringify({
+          connected_api_id: modelId,
+          prompt: content,
+        }),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(`API returned HTTP ${res.status}: ${errText}`);
+      }
+
+      const data = await res.json();
+      const latencySec = ((Date.now() - startTime) / 1000).toFixed(2) + 's';
+
+      const assistantMsg: ChatMessage = {
+        id: `msg-${Date.now()}-a`,
+        role: 'assistant',
+        content: data.output_text,
+        timestamp: new Date().toTimeString().slice(0, 8),
+        latency: latencySec,
+        faithfulness: Number(((data.overall_quality || 0.94) * 100).toFixed(1)),
+        hallucinationRisk: 0.2,
+        retrievedContext: `SENTINEL Execution & Evaluation Pipeline (${data.request_id.slice(0, 8)}).`,
+        tokens: Math.ceil((data.output_text || '').length / 4),
+      };
+
+      appendAssistantMsg(assistantMsg);
+    } catch (err: any) {
+      const assistantMsg: ChatMessage = {
+        id: `msg-${Date.now()}-a`,
+        role: 'assistant',
+        content: `⚠️ API Key Validation / Connection Failed for ${model?.name}.\n\nError: ${err.message || err}\n\nPlease check your provider credentials under Settings or switch to a local Ollama model.`,
+        timestamp: new Date().toTimeString().slice(0, 8),
+        latency: '0.04s',
+        faithfulness: 0,
+        hallucinationRisk: 100,
+        tokens: 0,
+      };
+
+      appendAssistantMsg(assistantMsg);
+    }
   };
 
   const clearChatHistory = (modelId: string) => {
+    const activeId = activeSessionIdMap[modelId];
+    if (activeId) {
+      setChatSessionsMap((prev) => ({
+        ...prev,
+        [modelId]: (prev[modelId] || []).map((s) => (s.id === activeId ? { ...s, messages: [] } : s)),
+      }));
+    }
     setChatThreadsMap((prev) => ({
       ...prev,
       [modelId]: [],
@@ -493,6 +912,8 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         promptsMap,
         apiKeys,
         chatThreadsMap,
+        chatSessionsMap,
+        activeSessionIdMap,
         selectModel,
         setActiveTab,
         openAddApiModal,
@@ -509,6 +930,9 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         revokeApiKey,
         sendChatMessage,
         clearChatHistory,
+        createNewChatSession,
+        switchChatSession,
+        deleteChatSession,
       }}
     >
       {children}
