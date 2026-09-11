@@ -1,0 +1,13 @@
+{
+  "records": [
+    {
+      "input_text": "What is SENTINEL?",
+      "expected_output": "SENTINEL is an LLMOps platform."
+    },
+    {
+      "input_text": "How does self-healing work?",
+      "expected_output": "Self-healing generates candidate prompts and verifies improvement margin."
+    }
+  ],
+  "description": "Golden evaluation dataset v1"
+}
