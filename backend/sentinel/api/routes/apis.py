@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +8,7 @@ from sentinel.core.security import encrypt_provider_key
 from sentinel.database.database import get_db
 from sentinel.database.models import ConnectedApi, Developer, Model
 from sentinel.schemas.connected_api import ConnectedApiCreate, ConnectedApiOut
+from ai.llm.ollama_client import ollama_client
 
 router = APIRouter(prefix="/apis", tags=["Connected APIs"])
 
@@ -27,34 +28,68 @@ async def add_api(
     current_developer: Developer = Depends(get_current_developer),
     db: AsyncSession = Depends(get_db)
 ):
+    # Preserve exact name entered by user
+    exact_name = payload.name.strip()
     encrypted_key = encrypt_provider_key(payload.api_key) if payload.api_key else None
     
     connected_api = ConnectedApi(
         developer_id=current_developer.id,
-        name=payload.name,
+        name=exact_name,
         provider=payload.provider,
+        base_url=payload.base_url,
+        model_name=payload.model_name or payload.provider,
         encrypted_api_key=encrypted_key,
         task_type=payload.task_type or "llm_chat",
-        status="Healthy"
+        status="Healthy",
+        config=payload.config or {},
     )
     db.add(connected_api)
     await db.flush()
 
-    # Automatically initialize default model for this API
+    # Automatically create associated model instance
     model_obj = Model(
         connected_api_id=connected_api.id,
         developer_id=current_developer.id,
-        name=payload.name,
+        name=exact_name,
         task=payload.task_type or "general",
-        model_type="custom" if payload.provider != "sentinel_free" else "default",
+        model_type="custom" if payload.provider != "sentinel_local" else "default",
         status="Healthy",
-        baseline_accuracy=98.5,
-        current_accuracy=98.5,
+        baseline_accuracy=95.0,
+        current_accuracy=95.0,
     )
     db.add(model_obj)
     await db.commit()
     await db.refresh(connected_api)
     return connected_api
+
+@router.get("/{api_id}/status")
+async def check_connection_status(
+    api_id: str,
+    current_developer: Developer = Depends(get_current_developer),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(ConnectedApi).where(
+            ConnectedApi.id == api_id,
+            ConnectedApi.developer_id == current_developer.id
+        )
+    )
+    api_obj = result.scalars().first()
+    if not api_obj:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Connected API not found")
+
+    if api_obj.provider.lower() in ["ollama", "sentinel_local"]:
+        status_info = await ollama_client.check_health_and_status()
+        return status_info
+
+    return {
+        "installed": True,
+        "running": True,
+        "base_url": api_obj.base_url or "https://api.openai.com",
+        "models": [api_obj.model_name or api_obj.provider],
+        "status": "Healthy",
+        "instructions": f"Connected to {api_obj.provider} API provider."
+    }
 
 @router.delete("/{api_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_api(
