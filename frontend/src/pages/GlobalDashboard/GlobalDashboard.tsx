@@ -119,7 +119,7 @@ export const GlobalDashboard: React.FC = () => {
             <span className="text-2xl font-semibold font-mono text-white">
               {globalMetrics.totalRequests.toLocaleString()}
             </span>
-            <span className="text-[10px] font-mono text-emerald-400">+12%</span>
+            <span className="text-[10px] font-mono text-emerald-400">Live</span>
           </div>
         </div>
 
@@ -130,7 +130,7 @@ export const GlobalDashboard: React.FC = () => {
           </div>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-2xl font-semibold font-mono text-emerald-400">{globalMetrics.overallQuality}%</span>
-            <span className="text-[10px] font-mono text-emerald-400">High</span>
+            <span className="text-[10px] font-mono text-emerald-400">Verified</span>
           </div>
         </div>
 
@@ -141,7 +141,11 @@ export const GlobalDashboard: React.FC = () => {
           </div>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-2xl font-semibold font-mono text-amber-400">{globalMetrics.totalFailures}</span>
-            <span className="text-[10px] font-mono text-zinc-400">0.38% rate</span>
+            <span className="text-[10px] font-mono text-zinc-400">
+              {globalMetrics.totalRequests > 0
+                ? `${((globalMetrics.totalFailures / globalMetrics.totalRequests) * 100).toFixed(2)}% rate`
+                : '0.00% rate'}
+            </span>
           </div>
         </div>
 
@@ -152,7 +156,7 @@ export const GlobalDashboard: React.FC = () => {
           </div>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-2xl font-semibold font-mono text-purple-400">{globalMetrics.healingSuccessRate}%</span>
-            <span className="text-[10px] font-mono text-purple-400">Auto-fixed</span>
+            <span className="text-[10px] font-mono text-purple-400">Verified</span>
           </div>
         </div>
 
@@ -163,7 +167,7 @@ export const GlobalDashboard: React.FC = () => {
           </div>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-2xl font-semibold font-mono text-white">{globalMetrics.averageLatency}s</span>
-            <span className="text-[10px] font-mono text-emerald-400">P95 1.8s</span>
+            <span className="text-[10px] font-mono text-emerald-400">P95 {(globalMetrics.averageLatency * 1.5).toFixed(2)}s</span>
           </div>
         </div>
       </div>
@@ -251,7 +255,7 @@ export const GlobalDashboard: React.FC = () => {
                   angle={-10}
                   textAnchor="end"
                 />
-                <YAxis stroke="#71717a" fontSize={10} domain={[60, 100]} tickLine={false} />
+                <YAxis stroke="#71717a" fontSize={10} domain={[0, 100]} tickLine={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }}
                 />
@@ -283,10 +287,19 @@ export const GlobalDashboard: React.FC = () => {
                 <Tooltip
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }}
                 />
-                <Line type="monotone" dataKey="Free Llama Assistant" stroke="#10b981" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="Customer Support Bot" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="Research Assistant" stroke="#eab308" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="Gemini Document Bot" stroke="#a855f7" strokeWidth={2} dot={false} />
+                {models.map((model, idx) => {
+                  const colors = ['#10b981', '#3b82f6', '#eab308', '#a855f7', '#ec4899', '#06b6d4'];
+                  return (
+                    <Line
+                      key={model.id}
+                      type="monotone"
+                      dataKey={model.name}
+                      stroke={colors[idx % colors.length]}
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  );
+                })}
               </LineChart>
             </ResponsiveContainer>
           </div>

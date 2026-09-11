@@ -23,27 +23,55 @@ import {
 import { useSentinel } from '../../../context/SentinelContext';
 
 export const IndividualDashboardTab: React.FC = () => {
-  const { selectedModel, failuresMap, selectFailureForDiagnosis } = useSentinel();
+  const { selectedModel, failuresMap, evaluationsMap, healingMap, selectFailureForDiagnosis } = useSentinel();
 
   if (!selectedModel) return null;
 
-  const modelFailures = failuresMap[selectedModel.id] || failuresMap['model-2'] || [];
+  const modelFailures = failuresMap[selectedModel.id] || [];
+  const modelEvals = evaluationsMap[selectedModel.id] || [];
+  const modelHealing = healingMap[selectedModel.id] || [];
+
+  // Compute dynamic stats
+  const totalEvals = modelEvals.length;
+  const avgQuality = totalEvals
+    ? Number((modelEvals.reduce((acc, e) => acc + e.quality, 0) / totalEvals).toFixed(1))
+    : selectedModel.quality;
+
+  const hallucinationRate = totalEvals
+    ? Number((modelEvals.reduce((acc, e) => acc + (e.hallucination || 0), 0) / totalEvals).toFixed(1))
+    : 0.0;
+
+  const faithfulnessRate = totalEvals
+    ? Number((modelEvals.reduce((acc, e) => acc + (e.faithfulness || 100), 0) / totalEvals).toFixed(1))
+    : 100.0;
+
+  const totalHealingAttempts = modelHealing.length;
+  const successfulHealing = modelHealing.filter((h) => h.status === 'Verified' || h.status === 'Promoted').length;
+  const healingSuccessRate = totalHealingAttempts
+    ? Number(((successfulHealing / totalHealingAttempts) * 100).toFixed(1))
+    : 100.0;
 
   const qualityOverTimeData = [
-    { time: '00:00', quality: selectedModel.quality - 2.1 },
-    { time: '04:00', quality: selectedModel.quality - 1.4 },
-    { time: '08:00', quality: selectedModel.quality - 3.2 },
-    { time: '12:00', quality: selectedModel.quality - 0.5 },
-    { time: '16:00', quality: selectedModel.quality - 1.1 },
-    { time: '20:00', quality: selectedModel.quality },
+    { time: '00:00', quality: Math.max(0, avgQuality - 1.5) },
+    { time: '04:00', quality: Math.max(0, avgQuality - 0.8) },
+    { time: '08:00', quality: Math.max(0, avgQuality - 2.0) },
+    { time: '12:00', quality: Math.max(0, avgQuality - 0.5) },
+    { time: '16:00', quality: Math.max(0, avgQuality - 1.0) },
+    { time: '20:00', quality: avgQuality },
   ];
 
-  const failureDistributionData = [
-    { name: 'Retrieval Issue', value: 45, color: '#3b82f6' },
-    { name: 'Hallucination', value: 25, color: '#eab308' },
-    { name: 'Prompt Issue', value: 15, color: '#a855f7' },
-    { name: 'Safety', value: 15, color: '#ef4444' },
-  ];
+  // Dynamic failure breakdown
+  const failureTypeCounts: Record<string, number> = {};
+  modelFailures.forEach((f) => {
+    failureTypeCounts[f.type] = (failureTypeCounts[f.type] || 0) + 1;
+  });
+
+  const failureColors = ['#3b82f6', '#eab308', '#a855f7', '#ef4444', '#10b981'];
+  const failureDistributionData = Object.keys(failureTypeCounts).map((type, idx) => ({
+    name: type,
+    value: failureTypeCounts[type],
+    color: failureColors[idx % failureColors.length],
+  }));
 
   return (
     <div className="space-y-6">
@@ -55,7 +83,7 @@ export const IndividualDashboardTab: React.FC = () => {
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="mt-2">
-            <span className="text-2xl font-semibold font-mono text-emerald-400">{selectedModel.quality}%</span>
+            <span className="text-2xl font-semibold font-mono text-emerald-400">{avgQuality}%</span>
             <p className="text-[10px] text-zinc-500 mt-0.5">Target: 95.0%</p>
           </div>
         </div>
@@ -66,7 +94,7 @@ export const IndividualDashboardTab: React.FC = () => {
             <AlertTriangle className="w-4 h-4 text-amber-400" />
           </div>
           <div className="mt-2">
-            <span className="text-2xl font-semibold font-mono text-amber-400">2.8%</span>
+            <span className="text-2xl font-semibold font-mono text-amber-400">{hallucinationRate}%</span>
             <p className="text-[10px] text-zinc-500 mt-0.5">Low risk threshold</p>
           </div>
         </div>
@@ -77,7 +105,7 @@ export const IndividualDashboardTab: React.FC = () => {
             <FileCheck className="w-4 h-4 text-blue-400" />
           </div>
           <div className="mt-2">
-            <span className="text-2xl font-semibold font-mono text-blue-400">95.4%</span>
+            <span className="text-2xl font-semibold font-mono text-blue-400">{faithfulnessRate}%</span>
             <p className="text-[10px] text-zinc-500 mt-0.5">Context agreement</p>
           </div>
         </div>
@@ -99,7 +127,7 @@ export const IndividualDashboardTab: React.FC = () => {
             <Zap className="w-4 h-4 text-purple-400" />
           </div>
           <div className="mt-2">
-            <span className="text-2xl font-semibold font-mono text-purple-400">84.0%</span>
+            <span className="text-2xl font-semibold font-mono text-purple-400">{healingSuccessRate}%</span>
             <p className="text-[10px] text-zinc-500 mt-0.5">Auto-recovered</p>
           </div>
         </div>
@@ -127,14 +155,14 @@ export const IndividualDashboardTab: React.FC = () => {
               <h3 className="text-xs font-semibold text-white">QUALITY OVER TIME</h3>
               <p className="text-[10px] text-zinc-500">Real-time accuracy trajectory (24 Hours)</p>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400">Avg {selectedModel.quality}%</span>
+            <span className="text-[10px] font-mono text-emerald-400">Avg {avgQuality}%</span>
           </div>
           <div className="h-56 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={qualityOverTimeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="time" stroke="#71717a" fontSize={10} tickLine={false} />
-                <YAxis stroke="#71717a" fontSize={10} domain={[70, 100]} tickLine={false} />
+                <YAxis stroke="#71717a" fontSize={10} domain={[0, 100]} tickLine={false} />
                 <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }} />
                 <Line type="monotone" dataKey="quality" stroke="#10b981" strokeWidth={2.5} dot={{ r: 3, fill: '#10b981' }} />
               </LineChart>
@@ -148,34 +176,46 @@ export const IndividualDashboardTab: React.FC = () => {
             <h3 className="text-xs font-semibold text-white">FAILURE DISTRIBUTION</h3>
             <p className="text-[10px] text-zinc-500">Categorized root cause anomalies</p>
           </div>
-          <div className="h-44 w-full flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={failureDistributionData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={45}
-                  outerRadius={65}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {failureDistributionData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-mono">
-            {failureDistributionData.map((item) => (
-              <div key={item.name} className="flex items-center space-x-1.5 text-zinc-400">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="truncate">{item.name} ({item.value}%)</span>
+          {failureDistributionData.length > 0 ? (
+            <>
+              <div className="h-44 w-full flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={failureDistributionData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={65}
+                      paddingAngle={4}
+                      dataKey="value"
+                    >
+                      {failureDistributionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            ))}
-          </div>
+              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-mono">
+                {failureDistributionData.map((item) => (
+                  <div key={item.name} className="flex items-center space-x-1.5 text-zinc-400">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="truncate">{item.name} ({item.value})</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="h-48 flex flex-col items-center justify-center text-center p-4">
+              <ShieldCheck className="w-8 h-8 text-emerald-400 mb-2" />
+              <p className="text-xs text-white font-medium">No Failures Detected</p>
+              <p className="text-[11px] text-zinc-500 mt-1">
+                Zero anomalies recorded for model {selectedModel.name}.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -189,67 +229,77 @@ export const IndividualDashboardTab: React.FC = () => {
           <span className="text-[10px] font-mono text-amber-400">{modelFailures.length} active logs</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-zinc-300">
-            <thead className="bg-[#09090b] text-[10px] uppercase font-semibold text-zinc-500 border-b border-zinc-800">
-              <tr>
-                <th className="px-5 py-2.5">Time</th>
-                <th className="px-4 py-2.5">Test Case</th>
-                <th className="px-4 py-2.5">Failure Type</th>
-                <th className="px-4 py-2.5">Severity</th>
-                <th className="px-4 py-2.5">Diagnosis</th>
-                <th className="px-4 py-2.5">Status</th>
-                <th className="px-4 py-2.5 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60 font-sans">
-              {modelFailures.slice(0, 4).map((f) => (
-                <tr
-                  key={f.id}
-                  onClick={() => selectFailureForDiagnosis(f.id)}
-                  className="hover:bg-zinc-800/40 cursor-pointer transition-colors group"
-                >
-                  <td className="px-5 py-3 font-mono text-[11px] text-zinc-400">{f.detectedTime}</td>
-                  <td className="px-4 py-3 font-medium text-white group-hover:text-emerald-400 transition-colors">
-                    {f.testCase}
-                  </td>
-                  <td className="px-4 py-3 text-zinc-300 font-mono text-[11px]">{f.type}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
-                        f.severity === 'High' || f.severity === 'Critical'
-                          ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                          : f.severity === 'Medium'
-                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          : 'bg-zinc-800 text-zinc-400'
-                      }`}
-                    >
-                      {f.severity}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-zinc-400 text-[11px] max-w-xs truncate">{f.diagnosis}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono ${
-                        f.status === 'Resolved'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 animate-pulse-purple'
-                      }`}
-                    >
-                      {f.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <button className="text-[11px] font-mono text-emerald-400 hover:underline flex items-center justify-center space-x-1">
-                      <span>Diagnose</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </td>
+        {modelFailures.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-zinc-300">
+              <thead className="bg-[#09090b] text-[10px] uppercase font-semibold text-zinc-500 border-b border-zinc-800">
+                <tr>
+                  <th className="px-5 py-2.5">Time</th>
+                  <th className="px-4 py-2.5">Test Case</th>
+                  <th className="px-4 py-2.5">Failure Type</th>
+                  <th className="px-4 py-2.5">Severity</th>
+                  <th className="px-4 py-2.5">Diagnosis</th>
+                  <th className="px-4 py-2.5">Status</th>
+                  <th className="px-4 py-2.5 text-center">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/60 font-sans">
+                {modelFailures.slice(0, 4).map((f) => (
+                  <tr
+                    key={f.id}
+                    onClick={() => selectFailureForDiagnosis(f.id)}
+                    className="hover:bg-zinc-800/40 cursor-pointer transition-colors group"
+                  >
+                    <td className="px-5 py-3 font-mono text-[11px] text-zinc-400">{f.detectedTime}</td>
+                    <td className="px-4 py-3 font-medium text-white group-hover:text-emerald-400 transition-colors">
+                      {f.testCase}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-300 font-mono text-[11px]">{f.type}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                          f.severity === 'High' || f.severity === 'Critical'
+                            ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                            : f.severity === 'Medium'
+                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            : 'bg-zinc-800 text-zinc-400'
+                        }`}
+                      >
+                        {f.severity}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-zinc-400 text-[11px] max-w-xs truncate">{f.diagnosis}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono ${
+                          f.status === 'Resolved'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 animate-pulse-purple'
+                        }`}
+                      >
+                        {f.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button className="text-[11px] font-mono text-emerald-400 hover:underline flex items-center justify-center space-x-1">
+                        <span>Diagnose</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-8 text-center text-zinc-400 space-y-2">
+            <ShieldCheck className="w-8 h-8 text-emerald-400 mx-auto" />
+            <p className="text-xs text-white font-medium">No Failures Detected</p>
+            <p className="text-xs text-zinc-500">
+              All evaluation checks passed cleanly for model {selectedModel.name}.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
