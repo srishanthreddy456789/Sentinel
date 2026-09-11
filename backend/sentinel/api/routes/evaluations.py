@@ -82,6 +82,16 @@ async def add_test_case(
     await db.refresh(test_case)
     return test_case
 
+from sentinel.workers.job_manager import job_manager
+from sentinel.workers.evaluation_worker import process_evaluation_job
+
+@router.get("/jobs/{job_id}")
+async def get_job_status(job_id: str):
+    status = await job_manager.get_job_status(job_id)
+    if not status:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    return status
+
 @router.post("/suites/{suite_id}/run")
 async def run_evaluation_suite(
     suite_id: str,
@@ -97,74 +107,39 @@ async def run_evaluation_suite(
     cases = cases_result.scalars().all()
 
     if not cases:
-        # Generate default evaluation regression suite cases if empty
-        cases = [
-            TestCase(test_suite_id=suite.id, input_text="What are your hours of operation?", expected_output="We are open Monday through Friday from 9 AM to 5 PM EST."),
-            TestCase(test_suite_id=suite.id, input_text="How do I initiate a return?", expected_output="To initiate a return, visit your account orders page and select 'Request Return'."),
-        ]
+        c1 = TestCase(test_suite_id=suite.id, input_text="What are your hours of operation?", expected_output="We are open Monday through Friday from 9 AM to 5 PM EST.")
+        c2 = TestCase(test_suite_id=suite.id, input_text="How do I initiate a return?", expected_output="To initiate a return, visit your account orders page and select 'Request Return'.")
+        db.add_all([c1, c2])
+        await db.commit()
 
     eval_run = EvaluationRun(
         connected_api_id=suite.connected_api_id,
         test_suite_id=suite.id,
         run_name=f"Run - {suite.name}",
-        status="completed",
+        status="QUEUED",
     )
     db.add(eval_run)
-    await db.flush()
-
-    passed_count = 0
-    failed_count = 0
-    total_scores = []
-    correctness_scores = []
-    faithfulness_scores = []
-    consistency_scores = []
-    toxicity_scores = []
-
-    for case in cases:
-        eval_res = evaluation_engine.evaluate_request(
-            input_text=case.input_text,
-            output_text=f"Response for '{case.input_text}': {case.expected_output or 'Information context'}",
-            expected_output=case.expected_output,
-            context=case.context,
-            latency_ms=320.0,
-        )
-
-        res_record = EvaluationResult(
-            evaluation_run_id=eval_run.id,
-            test_case_id=case.id if hasattr(case, 'id') else None,
-            passed=eval_res.passed,
-            overall_score=eval_res.overall_score,
-            correctness=eval_res.correctness,
-            faithfulness=eval_res.faithfulness,
-            hallucination=eval_res.hallucination,
-            consistency=eval_res.consistency,
-            toxicity=eval_res.toxicity,
-            latency_ms=320.0,
-        )
-        db.add(res_record)
-
-        if eval_res.passed:
-            passed_count += 1
-        else:
-            failed_count += 1
-
-        total_scores.append(eval_res.overall_score)
-        correctness_scores.append(eval_res.correctness)
-        faithfulness_scores.append(eval_res.faithfulness)
-        consistency_scores.append(eval_res.consistency)
-        toxicity_scores.append(eval_res.toxicity)
-
-    eval_run.overall_score = round(sum(total_scores) / max(1, len(total_scores)), 4)
-    eval_run.correctness_score = round(sum(correctness_scores) / max(1, len(correctness_scores)), 4)
-    eval_run.faithfulness_score = round(sum(faithfulness_scores) / max(1, len(faithfulness_scores)), 4)
-    eval_run.consistency_score = round(sum(consistency_scores) / max(1, len(consistency_scores)), 4)
-    eval_run.toxicity_score = round(sum(toxicity_scores) / max(1, len(toxicity_scores)), 4)
-    eval_run.passed_cases = passed_count
-    eval_run.failed_cases = failed_count
-
     await db.commit()
     await db.refresh(eval_run)
-    return eval_run
+
+    # Enqueue job to Redis / memory worker
+    job = await job_manager.enqueue_job(
+        queue_name="evaluation_queue",
+        job_type="SUITE_EVALUATION",
+        payload={"suite_id": suite.id, "run_id": eval_run.id},
+        api_connection_id=suite.connected_api_id,
+        evaluation_run_id=eval_run.id,
+    )
+
+    # Spawn background task processing job
+    asyncio.create_task(process_evaluation_job(job["job_id"], job["payload"]))
+
+    return {
+        "run_id": eval_run.id,
+        "job_id": job["job_id"],
+        "status": "queued",
+        "message": "Evaluation job enqueued successfully.",
+    }
 
 @router.get("/runs/{connected_api_id}")
 async def list_evaluation_runs(
