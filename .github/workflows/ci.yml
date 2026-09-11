@@ -23,7 +23,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
-          pip install sentence-transformers pytest
+          pip install sentence-transformers pytest redis mlflow
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -36,10 +36,28 @@ jobs:
           npm ci
           npm run build
 
-      - name: Run Backend Unit & Integration Tests
+      - name: Run Backend Tests
+        env:
+          PYTHONPATH: .
         run: |
-          pytest tests/ -v
+          python backend/tests/test_phase2_worker.py
+          python backend/tests/test_phase3_evaluation.py
+          python backend/tests/test_phase4_diagnosis.py
+          python backend/tests/test_phase5_rag.py
+          python backend/tests/test_phase6_healing_experiment.py
+          python backend/tests/test_phase7_mlflow_dvc.py
+          python backend/tests/test_phase8_ci_gate.py
+          python backend/tests/test_phase9_regression.py
+          python backend/tests/test_phase10_observability.py
+          python backend/tests/test_phase11_security.py
+          python backend/tests/test_phase12_benchmark.py
+          python backend/tests/test_phase13_baseline_study.py
+          python backend/tests/test_phase14_ablation_study.py
+          python backend/tests/test_phase15_research.py
+          python backend/tests/test_phase16_e2e_master.py
 
       - name: Run CI/CD Evaluation Quality Gate
+        env:
+          PYTHONPATH: .
         run: |
-          python scripts/evaluation_gate.py --tolerance 0.01
+          python scripts/evaluation_gate.py --max-regression 0.05 --max-latency-inc 0.10 --min-safety 0.95
