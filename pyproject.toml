@@ -25,3 +25,7 @@ Documentation = "https://github.com/srishanthreddy456789/Sentinel#readme"
 
 [tool.setuptools.packages.find]
 where = ["sdk"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = [".", "backend"]
