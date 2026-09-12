@@ -13,7 +13,8 @@
     "build:exe": "npm run pack:win",
     "pack:win": "npm run build && electron-packager . SENTINEL --platform=win32 --arch=x64 --out=release/ --overwrite",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "cd .. && python -m pytest backend/tests/ --cov=backend/sentinel --cov=ai --cov-report=term-missing"
   },
   "dependencies": {
     "clsx": "^2.1.1",
