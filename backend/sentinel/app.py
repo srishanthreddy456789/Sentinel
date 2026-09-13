@@ -13,7 +13,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from sentinel.api.routes import (
     apis,
     auth,
+    benchmarks,
     dashboard,
+    embeddings,
     evaluations,
     failures,
     heal,
@@ -24,6 +26,7 @@ from sentinel.api.routes import (
     predict,
     prompts,
     requests,
+    research,
 )
 from sentinel.core.config import settings
 from sentinel.database.database import Base, engine
@@ -94,3 +97,6 @@ app.include_router(predict.router, prefix=api_v1_prefix)
 app.include_router(monitor.router, prefix=api_v1_prefix)
 app.include_router(heal.router, prefix=api_v1_prefix)
 app.include_router(dashboard.router, prefix=api_v1_prefix)
+app.include_router(embeddings.router, prefix=api_v1_prefix)
+app.include_router(benchmarks.router, prefix=api_v1_prefix)
+app.include_router(research.router, prefix=api_v1_prefix)

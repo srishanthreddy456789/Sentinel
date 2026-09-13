@@ -69,3 +69,31 @@ export const promptService = {
     request<any>('/prompts/', { method: 'POST', body: JSON.stringify(data) }),
   comparePromptVersions: (v1Id: string, v2Id: string) => request<any>(`/prompts/compare/${v1Id}/${v2Id}`),
 };
+
+export const embeddingService = {
+  computeSimilarity: (text1: string, text2: string) =>
+    request<any>('/embeddings/similarity', { method: 'POST', body: JSON.stringify({ text1, text2 }) }),
+  vectorizeText: (text: string) =>
+    request<any>('/embeddings/vectorize', { method: 'POST', body: JSON.stringify({ text }) }),
+};
+
+export const benchmarkService = {
+  runBenchmark: (benchmarkName?: string, sampleCount?: number) =>
+    request<any>('/benchmarks/run', { method: 'POST', body: JSON.stringify({ benchmark_name: benchmarkName, sample_count: sampleCount }) }),
+  getBenchmarkSummary: () => request<any>('/benchmarks/summary'),
+};
+
+export const researchService = {
+  getAblationStudy: () => request<any>('/research/ablation'),
+};
+
+export const alertService = {
+  listAlerts: () => request<any[]>('/alerts/'),
+  getSystemHealth: () => request<any>('/health/detailed'),
+};
+
+export const keyService = {
+  listKeys: () => request<any[]>('/keys/'),
+  generateKey: (name: string) => request<any>('/keys/generate', { method: 'POST', body: JSON.stringify({ name }) }),
+  revokeKey: (keyId: string) => request<void>(`/keys/revoke/${keyId}`, { method: 'POST' }),
+};
