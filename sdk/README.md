@@ -1,8 +1,8 @@
 # SENTINEL Python SDK (`sentinel-mlops` v3.0.0)
 
 [![Python](https://img.shields.io/badge/Python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://pypi.org/project/sentinel-mlops/)
-[![Version](https://img.shields.io/badge/version-3.0.0-emerald.svg)](https://github.com/srishanthreddy456789/Sentinel)
-[![GitHub](https://img.shields.io/badge/GitHub-srishanthreddy456789%2FSentinel-black.svg?logo=github)](https://github.com/srishanthreddy456789/Sentinel)
+[![Version](https://img.shields.io/badge/version-3.0.0-emerald.svg)](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
+[![GitHub SDK](https://img.shields.io/badge/GitHub-SDK%20Source-black.svg?logo=github)](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
 [![GitLab](https://img.shields.io/badge/GitLab-Srishanthreddy456789%2FSENTINEL-orange.svg?logo=gitlab)](https://gitlab.com/Srishanthreddy456789/SENTINEL)
 
 > **Official Python Client for the SENTINEL Autonomous LLMOps & Self-Healing Platform.**  
@@ -12,7 +12,8 @@
 
 ## 📌 Repository Links
 
-- 🐙 **GitHub Repository**: [https://github.com/srishanthreddy456789/Sentinel](https://github.com/srishanthreddy456789/Sentinel)
+- 🐍 **Python SDK Directory**: [https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
+- 🐙 **Main GitHub Repository**: [https://github.com/srishanthreddy456789/Sentinel](https://github.com/srishanthreddy456789/Sentinel)
 - 🦊 **GitLab Mirror**: [https://gitlab.com/Srishanthreddy456789/SENTINEL](https://gitlab.com/Srishanthreddy456789/SENTINEL)
 - 📖 **AI Research Paper**: [SENTINEL Research Paper (PDF)](../research/paper/SENTINEL_Research_Paper.pdf)
 - 💡 **Key Novel Features**: [Unique Technological Features Matrix](../research/paper/UNIQUE_FEATURES.md)

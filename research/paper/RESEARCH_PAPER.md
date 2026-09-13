@@ -167,7 +167,7 @@ const handleSend = async (sessionId: string, message: string) => {
 This guarantees that background token generation in Chat Session $A$ displays progress indicators strictly within Session $A$'s sidebar item without leaking loading spinners into Session $B$.
 
 ### 3.3 Python SDK Architecture (`sentinel-mlops` v3.0.0)
-To enable zero-friction integration in production Python LLM applications, SENTINEL includes an open-source SDK (`sentinel-mlops` available on [GitHub](https://github.com/srishanthreddy456789/Sentinel) and [GitLab](https://gitlab.com/Srishanthreddy456789/SENTINEL)):
+To enable zero-friction integration in production Python LLM applications, SENTINEL includes an open-source SDK (`sentinel-mlops` available in the [SDK Directory](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk) on GitHub and [GitLab](https://gitlab.com/Srishanthreddy456789/SENTINEL)):
 
 ```python
 import sentinel_sdk as sentinel

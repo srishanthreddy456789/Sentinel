@@ -10,17 +10,19 @@
 [![Ollama](https://img.shields.io/badge/Ollama-local--LLM-black)]()
 [![React](https://img.shields.io/badge/React-frontend-61DAFB)]()
 [![Docker](https://img.shields.io/badge/Docker-containerized-2496ED)]()
+[![Python SDK](https://img.shields.io/badge/Python%20SDK-sentinel--mlops-blue.svg)](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
 [![Research Paper](https://img.shields.io/badge/Paper-SENTINEL%20v3.0.0-purple.svg)](RESEARCH_PAPER.md)
 [![Novel Features](https://img.shields.io/badge/Novel%20Features-6%20Unique%20Contributions-emerald.svg)](research/paper/UNIQUE_FEATURES.md)
 
 ---
 
-## 📜 Official AI Research Paper
+## 📜 Official AI Research Paper & Python SDK
 
 The formal academic paper detailing SENTINEL's underlying mathematical models, hybrid dense-sparse vector embedding algorithms, and autonomous prompt self-healing mutation engine is available for public review:
 
 - 📖 **Full Research Paper**: [**SENTINEL: Autonomous LLMOps with Hybrid Subword-Dense Embedding Cosine Similarity, Real-Time Faithfulness Verification, and Closed-Loop Prompt Self-Healing**](RESEARCH_PAPER.md)
 - 💡 **Unique Features & Novel Contributions**: [**Key Differentiators vs Ragas, TruLens, DeepEval & LangSmith**](research/paper/UNIQUE_FEATURES.md)
+- 🐍 **Python SDK Repository**: [**`sentinel-mlops` Python Client Directory**](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
 
 ---
 
