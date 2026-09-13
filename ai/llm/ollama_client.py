@@ -39,15 +39,40 @@ class OllamaClient:
         }
 
     async def generate_response(self, prompt: str, model_name: str = "mistral") -> str:
+        target_model = model_name
+        try:
+            async with httpx.AsyncClient(timeout=2.0) as client:
+                tags_resp = await client.get(f"{self.base_url}/api/tags")
+                if tags_resp.status_code == 200:
+                    models_list = [m.get("name") for m in tags_resp.json().get("models", [])]
+                    if models_list:
+                        clean_req = model_name.lower().replace(" ", "").replace("-", "")
+                        match = next((m for m in models_list if clean_req in m.lower().replace(" ", "").replace("-", "")), None)
+                        target_model = match or models_list[0]
+        except Exception as e:
+            logger.info(f"Ollama tags check fallback: {e}")
+
         url = f"{self.base_url}/api/generate"
         try:
-            async with httpx.AsyncClient(timeout=httpx.Timeout(5.0, connect=2.0)) as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(15.0, connect=3.0)) as client:
                 resp = await client.post(
                     url,
-                    json={"model": model_name, "prompt": prompt, "stream": False}
+                    json={"model": target_model, "prompt": prompt, "stream": False}
                 )
                 if resp.status_code == 200:
-                    return resp.json().get("response", "")
+                    text = resp.json().get("response", "")
+                    if text:
+                        return text
+
+                # Fallback to /api/chat
+                chat_resp = await client.post(
+                    f"{self.base_url}/api/chat",
+                    json={"model": target_model, "messages": [{"role": "user", "content": prompt}], "stream": False}
+                )
+                if chat_resp.status_code == 200:
+                    text = chat_resp.json().get("message", {}).get("content", "")
+                    if text:
+                        return text
         except Exception as e:
             logger.warning(f"Ollama response generation failed: {e}")
         

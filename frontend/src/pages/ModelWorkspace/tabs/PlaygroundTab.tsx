@@ -157,18 +157,44 @@ export const PlaygroundTab: React.FC = () => {
           selectedModel.provider === 'SENTINEL Free Local Model'
         ) {
           try {
-            const res = await fetch('/ollama-api/api/chat', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                model: 'mistral',
-                messages: [{ role: 'user', content: fullPrompt }],
-                stream: false,
-              }),
-            });
-            if (res.ok) {
+            let targetModel = 'mistral';
+            try {
+              const tagsRes = await fetch('http://localhost:11434/api/tags');
+              if (tagsRes.ok) {
+                const tagsData = await tagsRes.json();
+                const available = (tagsData.models || []).map((m: any) => m.name || m.model);
+                if (available.length > 0) {
+                  targetModel = available[0];
+                }
+              }
+            } catch (e) {}
+
+            let res: Response | null = null;
+            try {
+              res = await fetch('http://localhost:11434/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  model: targetModel,
+                  messages: [{ role: 'user', content: fullPrompt }],
+                  stream: false,
+                }),
+              });
+            } catch (err) {
+              res = await fetch('/ollama-api/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  model: targetModel,
+                  messages: [{ role: 'user', content: fullPrompt }],
+                  stream: false,
+                }),
+              });
+            }
+
+            if (res && res.ok) {
               const resData = await res.json();
-              outputText = resData.message?.content || '';
+              outputText = resData.message?.content || resData.response || '';
             }
           } catch (e) {
             console.warn('Ollama direct call failed:', e);
