@@ -4,6 +4,7 @@
 **Affiliation**: Autonomous AI Systems Research Lab & SENTINEL Project  
 **Date**: September 2026  
 **Document Version**: 3.0.0  
+**Repository Links**: [GitHub Repository](https://github.com/srishanthreddy456789/Sentinel) | [GitLab Mirror](https://gitlab.com/Srishanthreddy456789/SENTINEL)
 
 ---
 
@@ -13,7 +14,7 @@ Large Language Models (LLMs) have transformed artificial intelligence applicatio
 
 In this paper, we present **SENTINEL**, an open-source, local-first LLMOps platform designed to insert an active, continuous **AI Quality Verification Layer** into the software lifecycle. SENTINEL combines high-dimensional dense vector embeddings ($d=384$ via `all-MiniLM-L6-v2`) with a sparse subword character $n$-gram TF-IDF fallback to compute real-time semantic cosine similarity. Furthermore, SENTINEL introduces a closed-loop **Self-Healing Diagnostics Engine** that automatically isolates failure root causes and synthesizes candidate prompt mutations $P' = M(P, F)$. Evaluated across 1,500 enterprise test cases executed locally via Ollama (`llama3.1:8b`), SENTINEL reduces hallucination frequency by 82.77%, achieves an automated prompt self-healing recovery rate of 78.4%, and maintains sub-20ms evaluation latency ($P_{95} = 18.4\text{ ms}$) without requiring external cloud inference API keys.
 
-**Keywords**: LLMOps, Self-Healing AI, Vector Embedding Cosine Similarity, Faithfulness Verification, Automated Prompt Engineering, Local-First AI Quality Control, RAG Evaluation.
+**Keywords**: LLMOps, Self-Healing AI, Vector Embedding Cosine Similarity, Faithfulness Verification, Automated Prompt Engineering, Local-First AI Quality Control, RAG Evaluation, Python SDK.
 
 ---
 
@@ -164,6 +165,21 @@ const handleSend = async (sessionId: string, message: string) => {
 ```
 
 This guarantees that background token generation in Chat Session $A$ displays progress indicators strictly within Session $A$'s sidebar item without leaking loading spinners into Session $B$.
+
+### 3.3 Python SDK Architecture (`sentinel-mlops` v3.0.0)
+To enable zero-friction integration in production Python LLM applications, SENTINEL includes an open-source SDK (`sentinel-mlops` available on [GitHub](https://github.com/srishanthreddy456789/Sentinel) and [GitLab](https://gitlab.com/Srishanthreddy456789/SENTINEL)):
+
+```python
+import sentinel_sdk as sentinel
+
+sentinel.init(api_key="sk_sentinel_2026", base_url="http://localhost:8000")
+
+@sentinel.monitor(model_id="support_bot")
+def predict_llm(user_input: str):
+    return llm_chain.invoke(user_input)
+```
+
+The SDK utilizes an internal non-blocking producer-consumer thread queue (`queue.Queue(maxsize=10000)`). A background worker thread (`_background_worker`) batches predictions every 2.0 seconds or 20 items, adding $< 0.1\text{ ms}$ overhead to host application execution loops.
 
 ---
 
@@ -335,7 +351,10 @@ SENTINEL includes built-in toxicity and regex filter guards to ensure generated 
 
 ## 8. Conclusion & Future Work
 
-In this paper, we introduced **SENTINEL**, an autonomous, local-first LLMOps platform featuring hybrid subword-dense vector embedding cosine similarity, 9-dimensional real-time quality gating, and closed-loop prompt self-healing. Future research will explore multi-modal evaluation pipelines and automated hyperparameter tuning.
+In this paper, we introduced **SENTINEL**, an autonomous, local-first LLMOps platform featuring hybrid subword-dense vector embedding cosine similarity, 9-dimensional real-time quality gating, closed-loop prompt self-healing, and an open-source Python SDK (`sentinel-mlops`).
+
+- 🐙 **GitHub**: [https://github.com/srishanthreddy456789/Sentinel](https://github.com/srishanthreddy456789/Sentinel)
+- 🦊 **GitLab**: [https://gitlab.com/Srishanthreddy456789/SENTINEL](https://gitlab.com/Srishanthreddy456789/SENTINEL)
 
 ---
 
