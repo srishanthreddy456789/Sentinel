@@ -13,6 +13,8 @@ import {
   MessageSquare,
   PanelLeftClose,
   PanelLeftOpen,
+  Layers,
+  FolderPlus,
 } from 'lucide-react';
 import { useSentinel } from '../../../context/SentinelContext';
 
@@ -26,6 +28,10 @@ export const ChatTab: React.FC = () => {
     createNewChatSession,
     switchChatSession,
     deleteChatSession,
+    projects,
+    activeProjectId,
+    selectProject,
+    openAddProjectModal,
   } = useSentinel();
 
   const [input, setInput] = useState('');
@@ -42,6 +48,13 @@ export const ChatTab: React.FC = () => {
   const activeSessionId = activeSessionIdMap[selectedModel.id];
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
   const messages = activeSession ? activeSession.messages : [];
+  
+  // Active Project Workspace
+  const activeProject = projects.find((p) => p.id === activeProjectId) || projects[0];
+
+  // Unused Chat Guard: check if an empty/unused session already exists
+  const hasEmptySession = sessions.some((s) => !s.messages || s.messages.length === 0);
+  const isActiveSessionEmpty = activeSession && (!activeSession.messages || activeSession.messages.length === 0);
 
   // Automatically ensure at least one chat session exists
   useEffect(() => {
@@ -88,26 +101,50 @@ export const ChatTab: React.FC = () => {
       {showSidebar && (
         <div className="w-64 bg-[#0c0c0e] border-r border-zinc-800/80 flex flex-col justify-between p-3 shrink-0">
           <div className="space-y-3 flex-1 overflow-y-auto">
-            {/* New Chat Button */}
+            {/* New Chat Button with Guard */}
             <button
               onClick={() => createNewChatSession(selectedModel.id)}
-              className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md text-xs font-medium transition-colors flex items-center justify-center space-x-2 shadow-xs"
+              title={
+                isActiveSessionEmpty
+                  ? 'Current chat session is empty. Send a message to start it before adding another.'
+                  : 'Start a new conversation session'
+              }
+              className={`w-full py-2 px-3 rounded-md text-xs font-medium transition-all flex items-center justify-center space-x-2 shadow-xs cursor-pointer ${
+                isActiveSessionEmpty
+                  ? 'bg-emerald-700/60 text-emerald-200 border border-emerald-500/40 hover:bg-emerald-600'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+              }`}
             >
               <Plus className="w-4 h-4" />
-              <span>New Chat</span>
+              <span>{isActiveSessionEmpty ? 'Current Chat Empty' : '+ New Chat'}</span>
+            </button>
+
+            {/* Quick Add Project Action */}
+            <button
+              onClick={openAddProjectModal}
+              className="w-full py-1.5 px-2.5 bg-purple-950/30 hover:bg-purple-900/40 text-purple-300 border border-purple-800/50 rounded-md text-[11px] font-mono transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
+            >
+              <FolderPlus className="w-3.5 h-3.5 text-purple-400" />
+              <span>+ Create Project</span>
             </button>
 
             {/* Recent Sessions List Header */}
-            <div className="pt-2">
-              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider block px-1">
+            <div className="pt-2 flex items-center justify-between px-1">
+              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
                 Chat Sessions ({sessions.length})
               </span>
+              {isActiveSessionEmpty && (
+                <span className="text-[9px] font-mono text-amber-400 bg-amber-950/40 px-1 py-0.2 rounded border border-amber-800/40">
+                  1 Open
+                </span>
+              )}
             </div>
 
             {/* Session Items */}
             <div className="space-y-1">
               {sessions.map((session) => {
                 const isActive = session.id === activeSession?.id;
+                const isEmpty = !session.messages || session.messages.length === 0;
                 return (
                   <div
                     key={session.id}
@@ -121,6 +158,9 @@ export const ChatTab: React.FC = () => {
                     <div className="flex items-center space-x-2 truncate pr-2">
                       <MessageSquare className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-emerald-400' : 'text-zinc-500'}`} />
                       <span className="truncate">{session.title || 'New Chat'}</span>
+                      {isEmpty && (
+                        <span className="text-[9px] text-zinc-500 italic">(empty)</span>
+                      )}
                     </div>
 
                     <button
@@ -190,6 +230,32 @@ export const ChatTab: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-2 text-xs">
+            {/* Active Project Workspace Selector */}
+            <div className="flex items-center space-x-1.5 bg-purple-950/30 border border-purple-800/50 rounded px-2 py-1 text-purple-300 font-mono text-[11px]">
+              <Layers className="w-3.5 h-3.5 text-purple-400" />
+              <span className="text-zinc-400">Project:</span>
+              <select
+                value={activeProject?.id || ''}
+                onChange={(e) => {
+                  if (e.target.value === 'ADD_NEW') {
+                    openAddProjectModal();
+                  } else {
+                    selectProject(e.target.value);
+                  }
+                }}
+                className="bg-transparent text-purple-300 font-semibold focus:outline-none cursor-pointer"
+              >
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id} className="bg-[#121215] text-zinc-200">
+                    {p.name}
+                  </option>
+                ))}
+                <option value="ADD_NEW" className="bg-[#121215] text-purple-400 font-bold">
+                  + Add Project...
+                </option>
+              </select>
+            </div>
+
             {/* Active System Prompt Selector */}
             <div className="flex items-center space-x-1 bg-[#09090b] border border-zinc-800 rounded px-2 py-1 text-zinc-300 font-mono text-[11px]">
               <FileText className="w-3 h-3 text-emerald-400" />

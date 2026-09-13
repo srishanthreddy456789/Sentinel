@@ -12,6 +12,7 @@ import { HealingTab } from './tabs/HealingTab';
 import { RequestsTab } from './tabs/RequestsTab';
 import { ExperimentsTab } from './tabs/ExperimentsTab';
 import { PromptsTab } from './tabs/PromptsTab';
+import { ProjectsTab } from './tabs/ProjectsTab';
 import { IntegrationTab } from './tabs/IntegrationTab';
 import { SettingsTab } from './tabs/SettingsTab';
 
@@ -24,6 +25,8 @@ export const ModelWorkspace: React.FC = () => {
         return <IndividualDashboardTab />;
       case 'Chat':
         return <ChatTab />;
+      case 'Projects':
+        return <ProjectsTab />;
       case 'Playground':
         return <PlaygroundTab />;
       case 'Evaluations':

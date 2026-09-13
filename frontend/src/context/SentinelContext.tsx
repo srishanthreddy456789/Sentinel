@@ -15,7 +15,9 @@ import {
   ApiKeyItem,
   ChatMessage,
   ChatSession,
+  ProjectItem,
 } from '../types/sentinel';
+import { projectService } from '../services/api';
 import {
   INITIAL_MODELS,
   INITIAL_GLOBAL_METRICS,
@@ -53,12 +55,20 @@ interface SentinelContextType {
   chatThreadsMap: Record<string, ChatMessage[]>;
   chatSessionsMap: Record<string, ChatSession[]>;
   activeSessionIdMap: Record<string, string>;
+  projects: ProjectItem[];
+  activeProjectId: string | null;
+  isAddProjectModalOpen: boolean;
 
   // Actions
   selectModel: (id: string | null) => void;
   setActiveTab: (tab: WorkspaceTab) => void;
   openAddApiModal: () => void;
   closeAddApiModal: () => void;
+  openAddProjectModal: () => void;
+  closeAddProjectModal: () => void;
+  createProject: (data: { name: string; description?: string; systemInstructions?: string; contextDocs?: string; defaultModelId?: string }) => Promise<ProjectItem>;
+  selectProject: (projectId: string | null) => void;
+  deleteProject: (projectId: string) => void;
   addModel: (data: { name: string; provider: ApiProvider; model: string; baseUrl?: string; apiKey?: string }) => void;
   updateModelName: (id: string, newName: string) => void;
   updateModelSettings: (id: string, updates: Partial<ConnectedModel>) => void;
@@ -370,10 +380,89 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setApiKeys((prev) => prev.filter((k) => k.id !== keyId));
   };
 
+  const PROJECTS_KEY = `sentinel_projects_${userId}`;
+  const [projects, setProjects] = useState<ProjectItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(PROJECTS_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [
+      {
+        id: 'proj-default-1',
+        name: 'Default Workspace Project',
+        description: 'General project workspace container for multi-turn chats',
+        systemInstructions: 'You are a helpful AI assistant. Rely strictly on provided project context.',
+        contextDocs: 'Default Knowledge Base for SENTINEL project ecosystem.',
+        createdAt: new Date().toLocaleDateString(),
+      },
+    ];
+  });
+
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+    } catch (e) {}
+  }, [projects, PROJECTS_KEY]);
+
+  const openAddProjectModal = () => setIsAddProjectModalOpen(true);
+  const closeAddProjectModal = () => setIsAddProjectModalOpen(false);
+
+  const createProject = async (data: {
+    name: string;
+    description?: string;
+    systemInstructions?: string;
+    contextDocs?: string;
+    defaultModelId?: string;
+  }): Promise<ProjectItem> => {
+    const newProj: ProjectItem = {
+      id: `proj-${Date.now()}`,
+      name: data.name,
+      description: data.description,
+      systemInstructions: data.systemInstructions,
+      contextDocs: data.contextDocs,
+      defaultModelId: data.defaultModelId,
+      chatCount: 0,
+      createdAt: new Date().toLocaleDateString(),
+    };
+
+    try {
+      projectService.createProject(data).catch(() => {});
+    } catch (e) {}
+
+    setProjects((prev) => [newProj, ...prev]);
+    setActiveProjectId(newProj.id);
+    return newProj;
+  };
+
+  const selectProject = (projectId: string | null) => {
+    setActiveProjectId(projectId);
+  };
+
+  const deleteProject = (projectId: string) => {
+    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+    if (activeProjectId === projectId) {
+      setActiveProjectId(null);
+    }
+  };
+
   const [chatSessionsMap, setChatSessionsMap] = useState<Record<string, ChatSession[]>>({});
   const [activeSessionIdMap, setActiveSessionIdMap] = useState<Record<string, string>>({});
 
   const createNewChatSession = (modelId: string): ChatSession => {
+    const existingSessions = chatSessionsMap[modelId] || [];
+    // Unused Chat Guard: If an empty/unused session already exists, switch to it instead of creating duplicate empty chats!
+    const unusedSession = existingSessions.find((s) => !s.messages || s.messages.length === 0);
+    if (unusedSession) {
+      setActiveSessionIdMap((prev) => ({
+        ...prev,
+        [modelId]: unusedSession.id,
+      }));
+      return unusedSession;
+    }
+
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newSession: ChatSession = {
       id: `session-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -986,10 +1075,18 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         chatThreadsMap,
         chatSessionsMap,
         activeSessionIdMap,
+        projects,
+        activeProjectId,
+        isAddProjectModalOpen,
         selectModel,
         setActiveTab,
         openAddApiModal,
         closeAddApiModal,
+        openAddProjectModal,
+        closeAddProjectModal,
+        createProject,
+        selectProject,
+        deleteProject,
         addModel,
         updateModelName,
         updateModelSettings,

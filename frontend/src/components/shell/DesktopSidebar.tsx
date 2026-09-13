@@ -15,7 +15,16 @@ import { useSentinel } from '../../context/SentinelContext';
 import { ModelHealth } from '../../types/sentinel';
 
 export const DesktopSidebar: React.FC = () => {
-  const { models, selectedModelId, selectModel, openAddApiModal } = useSentinel();
+  const {
+    models,
+    selectedModelId,
+    selectModel,
+    openAddApiModal,
+    projects,
+    activeProjectId,
+    selectProject,
+    openAddProjectModal,
+  } = useSentinel();
 
   const getHealthIndicator = (health: ModelHealth) => {
     switch (health) {
@@ -94,10 +103,50 @@ export const DesktopSidebar: React.FC = () => {
         {/* + Add API Action */}
         <button
           onClick={openAddApiModal}
-          className="w-full flex items-center space-x-2 px-2.5 py-2 rounded-md border border-dashed border-zinc-700/80 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-xs"
+          className="w-full flex items-center space-x-2 px-2.5 py-2 rounded-md border border-dashed border-zinc-700/80 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-xs mb-4"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>+ Add API</span>
+        </button>
+
+        {/* PROJECTS Section Header */}
+        <div className="px-2.5 mb-2 flex items-center justify-between">
+          <span className="text-[10px] font-semibold tracking-wider text-zinc-500 uppercase">
+            PROJECT WORKSPACES
+          </span>
+          <span className="text-[10px] font-mono bg-purple-950/40 text-purple-400 px-1.5 py-0.2 rounded border border-purple-800/40">
+            {projects.length}
+          </span>
+        </div>
+
+        {/* Projects List */}
+        <div className="space-y-1 mb-2">
+          {projects.map((proj) => {
+            const isSelected = activeProjectId === proj.id;
+            return (
+              <button
+                key={proj.id}
+                onClick={() => selectProject(proj.id)}
+                className={`w-full flex items-center space-x-2 px-2.5 py-1.5 rounded-md transition-all text-left group text-xs ${
+                  isSelected
+                    ? 'bg-purple-950/30 text-purple-300 border border-purple-800/50 font-medium'
+                    : 'text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200'
+                }`}
+              >
+                <Layers className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-purple-400' : 'text-zinc-500'}`} />
+                <span className="truncate">{proj.name}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* + Add Project Button */}
+        <button
+          onClick={openAddProjectModal}
+          className="w-full flex items-center space-x-2 px-2.5 py-2 rounded-md border border-dashed border-purple-800/60 text-purple-400 hover:text-purple-300 hover:border-purple-500/80 hover:bg-purple-500/10 transition-all text-xs cursor-pointer"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>+ Add Project</span>
         </button>
       </div>
 

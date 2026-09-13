@@ -97,3 +97,20 @@ export const keyService = {
   generateKey: (name: string) => request<any>('/keys/generate', { method: 'POST', body: JSON.stringify({ name }) }),
   revokeKey: (keyId: string) => request<void>(`/keys/revoke/${keyId}`, { method: 'POST' }),
 };
+
+export const projectService = {
+  listProjects: () => request<any[]>('/projects/'),
+  createProject: (data: { name: string; description?: string; system_instructions?: string; context_docs?: string; default_model_id?: string }) =>
+    request<any>('/projects/', { method: 'POST', body: JSON.stringify(data) }),
+  getProject: (projectId: string) => request<any>(`/projects/${projectId}`),
+  updateProject: (projectId: string, data: any) => request<any>(`/projects/${projectId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteProject: (projectId: string) => request<any>(`/projects/${projectId}`, { method: 'DELETE' }),
+
+  listProjectChats: (projectId: string) => request<any>(`/projects/${projectId}/chats`),
+  createProjectChat: (projectId: string, title?: string) =>
+    request<any>(`/projects/${projectId}/chats`, { method: 'POST', body: JSON.stringify({ title }) }),
+  getProjectChat: (projectId: string, chatId: string) => request<any>(`/projects/${projectId}/chats/${chatId}`),
+  sendProjectMessage: (projectId: string, chatId: string, content: string, connectedApiId?: string) =>
+    request<any>(`/projects/${projectId}/chats/${chatId}/messages`, { method: 'POST', body: JSON.stringify({ content, connected_api_id: connectedApiId }) }),
+};
+

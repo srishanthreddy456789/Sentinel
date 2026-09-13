@@ -12,6 +12,7 @@ import {
   FileCode,
   Code2,
   Sliders,
+  Layers,
 } from 'lucide-react';
 import { useSentinel } from '../../context/SentinelContext';
 import { WorkspaceTab } from '../../types/sentinel';
@@ -19,6 +20,7 @@ import { WorkspaceTab } from '../../types/sentinel';
 const TABS: { id: WorkspaceTab; label: string; icon: React.FC<{ className?: string }> }[] = [
   { id: 'Dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'Chat', label: 'Chat', icon: MessageSquare },
+  { id: 'Projects', label: 'Projects', icon: Layers },
   { id: 'Playground', label: 'Playground', icon: Sparkles },
   { id: 'Evaluations', label: 'Evaluations', icon: ClipboardCheck },
   { id: 'Failures', label: 'Failures', icon: AlertOctagon },

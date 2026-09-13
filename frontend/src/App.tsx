@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { DesktopHeader } from './components/shell/DesktopHeader';
 import { DesktopSidebar } from './components/shell/DesktopSidebar';
 import { AddApiModal } from './components/modals/AddApiModal';
+import { AddProjectModal } from './components/modals/AddProjectModal';
 import { GlobalDashboard } from './pages/GlobalDashboard/GlobalDashboard';
 import { ModelWorkspace } from './pages/ModelWorkspace/ModelWorkspace';
 import { AuthPage } from './pages/Auth/AuthPage';
@@ -29,6 +30,8 @@ const MainShell: React.FC = () => {
 
       {/* Add API Modal Dialog */}
       <AddApiModal />
+      {/* Add Project Workspace Modal Dialog */}
+      <AddProjectModal />
     </div>
   );
 };

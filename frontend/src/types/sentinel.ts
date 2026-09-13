@@ -188,6 +188,18 @@ export interface ChatSession {
   messages: ChatMessage[];
 }
 
+export interface ProjectItem {
+  id: string;
+  name: string;
+  description?: string;
+  systemInstructions?: string;
+  contextDocs?: string;
+  defaultModelId?: string;
+  chatCount?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export type WorkspaceTab =
   | 'Dashboard'
   | 'Chat'
@@ -199,5 +211,7 @@ export type WorkspaceTab =
   | 'Requests'
   | 'Experiments'
   | 'Prompts'
+  | 'Projects'
   | 'Integration'
   | 'Settings';
+
