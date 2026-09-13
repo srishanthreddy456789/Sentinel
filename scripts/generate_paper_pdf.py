@@ -32,7 +32,7 @@ MathJax = {{
 <style>
   @page {{
     size: letter;
-    margin: 22mm 20mm 22mm 20mm;
+    margin: 20mm 18mm 20mm 18mm;
   }}
 
   body {{
@@ -159,6 +159,265 @@ MathJax = {{
     padding-left: 14px;
     color: #334155;
   }}
+
+  /* Vector Academic Figure Cards */
+  .figure-card {{
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }}
+
+  .figure-header {{
+    font-family: Arial, sans-serif;
+    font-size: 9.5pt;
+    font-weight: bold;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }}
+
+  .pipeline-block {{
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }}
+
+  .traditional-bg {{
+    background: #f8fafc;
+    border: 1px dashed #94a3b8;
+  }}
+
+  .sentinel-bg {{
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+  }}
+
+  .pipeline-title {{
+    font-family: Arial, sans-serif;
+    font-size: 9pt;
+    font-weight: bold;
+    color: #1e293b;
+    margin-bottom: 8px;
+  }}
+
+  .flow-flex {{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }}
+
+  .flow-card {{
+    font-family: Arial, sans-serif;
+    font-size: 8.5pt;
+    font-weight: 600;
+    padding: 5px 9px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+  }}
+
+  .card-slate {{ background: #e2e8f0; color: #334155; border-color: #cbd5e1; }}
+  .card-red {{ background: #fee2e2; color: #991b1b; border-color: #fca5a5; }}
+  .card-blue {{ background: #dbeafe; color: #1e40af; border-color: #93c5fd; }}
+  .card-purple {{ background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }}
+  .card-indigo {{ background: #e0e7ff; color: #3730a3; border-color: #a5b4fc; }}
+  .card-amber {{ background: #fef3c7; color: #92400e; border-color: #fde047; }}
+  .card-emerald {{ background: #d1fae5; color: #065f46; border-color: #6ee7b7; }}
+
+  .flow-arrow {{
+    font-size: 10pt;
+    color: #64748b;
+    font-weight: bold;
+  }}
+
+  /* Taxonomy Grid */
+  .taxonomy-grid {{
+    display: flex;
+    gap: 10px;
+  }}
+
+  .taxonomy-col {{
+    flex: 1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    font-family: Arial, sans-serif;
+  }}
+
+  .col-lexical {{ background: #f8fafc; border-color: #cbd5e1; }}
+  .col-cloud {{ background: #fef2f2; border-color: #fca5a5; }}
+  .col-sentinel {{ background: #f0fdf4; border-color: #86efac; }}
+
+  .tax-title {{
+    font-size: 9.5pt;
+    font-weight: bold;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }}
+
+  .tax-desc {{
+    font-size: 8.5pt;
+    color: #475569;
+    line-height: 1.35;
+  }}
+
+  /* Micro-Architecture Layers */
+  .arch-layer {{
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    font-family: Arial, sans-serif;
+  }}
+
+  .layer-gui {{ background: #eff6ff; border-color: #93c5fd; }}
+  .layer-backend {{ background: #f5f3ff; border-color: #c4b5fd; }}
+  .layer-daemon {{ background: #f0fdf4; border-color: #86efac; }}
+
+  .layer-badge {{
+    display: inline-block;
+    font-size: 8pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: #0f172a;
+    color: #fff;
+    margin-bottom: 4px;
+  }}
+
+  .layer-content {{
+    font-size: 9pt;
+    color: #1e293b;
+  }}
+
+  .arch-arrow {{
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 8.5pt;
+    font-weight: bold;
+    color: #64748b;
+    margin: 6px 0;
+  }}
+
+  /* Quality Gating Box */
+  .gating-container {{
+    font-family: Arial, sans-serif;
+  }}
+
+  .gating-inputs {{
+    font-size: 9pt;
+    background: #f1f5f9;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #cbd5e1;
+  }}
+
+  .metric-chips {{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }}
+
+  .chip {{
+    font-size: 8pt;
+    font-weight: bold;
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid #c7d2fe;
+  }}
+
+  .gating-outcomes {{
+    display: flex;
+    gap: 8px;
+  }}
+
+  .gate-card {{
+    flex: 1;
+    font-size: 8.5pt;
+    font-weight: bold;
+    padding: 8px 10px;
+    border-radius: 5px;
+    text-align: center;
+  }}
+
+  .gate-green {{ background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }}
+  .gate-yellow {{ background: #fef3c7; color: #92400e; border: 1px solid #fde047; }}
+  .gate-red {{ background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }}
+
+  /* Loop Step Grid */
+  .loop-grid {{
+    display: flex;
+    gap: 8px;
+    font-family: Arial, sans-serif;
+  }}
+
+  .loop-step {{
+    flex: 1;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 8.5pt;
+    color: #334155;
+  }}
+
+  .step-1 {{ border-left: 3px solid #ef4444; }}
+  .step-2 {{ border-left: 3px solid #f59e0b; }}
+  .step-3 {{ border-left: 3px solid #6366f1; }}
+  .step-4 {{ border-left: 3px solid #10b981; }}
+
+  /* Latency Bar Visualizer */
+  .latency-bar-group {{
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }}
+
+  .bar-item {{
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }}
+
+  .bar-label {{
+    font-size: 8.5pt;
+    font-weight: bold;
+    color: #1e293b;
+  }}
+
+  .bar-track {{
+    background: #e2e8f0;
+    height: 18px;
+    border-radius: 4px;
+    overflow: hidden;
+  }}
+
+  .bar-fill {{
+    height: 100%;
+    font-size: 7.5pt;
+    font-weight: bold;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+  }}
+
+  .fill-p50 {{ background: #3b82f6; }}
+  .fill-p90 {{ background: #8b5cf6; }}
+  .fill-p95 {{ background: #10b981; }}
 
   .mjx-chtml {{
     font-size: 105% !important;
