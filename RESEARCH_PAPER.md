@@ -233,12 +233,12 @@ Response $y$ is split into claim sentences $S(y) = \{s_1, s_2, \dots, s_k\}$. Fo
 
 $$\gamma(s_i, C) = \max_{c_j \in C} \text{Sim}(\mathbf{E}(s_i), \mathbf{E}(c_j))$$
 
-$$S_{\text{faithfulness}} = \frac{1}{k} \sum_{i=1}^k \mathbb{I}\left( \gamma(s_i, C) \ge 0.65 \right)$$
+$$S_{\text{faithfulness}} = \frac{1}{k} \sum_{i=1}^k \mathbf{1}(\gamma(s_i, C) \ge 0.65)$$
 
 ### 4.3 Hallucination Detection ($S_{\text{hallucination}}$)
 Measures factual contradiction between generated claims and verified premises:
 
-$$S_{\text{hallucination}} = 1.0 - \frac{1}{k} \sum_{i=1}^k \mathbb{I}\left( \text{Contradicts}(s_i, C) \right)$$
+$$S_{\text{hallucination}} = 1.0 - \frac{1}{k} \sum_{i=1}^k \mathbf{1}(\text{Contradicts}(s_i, C))$$
 
 ### 4.4 Unified Quality Aggregation Function ($Q$)
 The overall quality score $Q$ aggregates all sub-metrics:
@@ -280,7 +280,7 @@ When quality gating evaluates to $\text{RED}$, SENTINEL executes the **Self-Heal
 ### 5.1 Diagnosis Operator ($\mathcal{D}$)
 Maps metric outputs to canonical failure classes:
 
-$$\mathcal{D}(\mathbf{M}) = \left\{ f_i \;\middle|\; M_i.\text{score} < M_i.\text{threshold} \right\}$$
+$$\mathcal{D}(\mathbf{M}) = \{ f_i \mid M_i.\text{score} < M_i.\text{threshold} \}$$
 
 ### 5.2 Mutation Operator ($M(P, F)$)
 Generates augmented prompt $P'$ by injecting domain-specific repair directives:
