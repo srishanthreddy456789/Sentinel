@@ -36,6 +36,7 @@ export const ChatTab: React.FC = () => {
 
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [sendingSessionId, setSendingSessionId] = useState<string | null>(null);
   const [systemPromptVersion, setSystemPromptVersion] = useState('v1.4');
   const [showParameters, setShowParameters] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
@@ -88,11 +89,12 @@ export const ChatTab: React.FC = () => {
 
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!input.trim() || isSending) return;
+    if (!input.trim() || isSending || !activeSession) return;
 
     const text = input.trim();
     setInput('');
     setIsSending(true);
+    setSendingSessionId(activeSession.id);
 
     try {
       await sendChatMessage(selectedModel.id, text);
@@ -100,6 +102,7 @@ export const ChatTab: React.FC = () => {
       console.error('Error sending chat message:', err);
     } finally {
       setIsSending(false);
+      setSendingSessionId(null);
     }
   };
 
@@ -173,9 +176,13 @@ export const ChatTab: React.FC = () => {
                     <div className="flex items-center space-x-2 truncate pr-2">
                       <MessageSquare className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-emerald-400' : 'text-zinc-500'}`} />
                       <span className="truncate">{session.title || 'New Chat'}</span>
-                      {isEmpty && (
+                      {isSending && sendingSessionId === session.id ? (
+                        <span title="Generating response...">
+                          <RefreshCw className="w-3 h-3 animate-spin text-emerald-400 shrink-0" />
+                        </span>
+                      ) : isEmpty ? (
                         <span className="text-[9px] text-zinc-500 italic">(empty)</span>
-                      )}
+                      ) : null}
                     </div>
 
                     <button
@@ -449,8 +456,8 @@ export const ChatTab: React.FC = () => {
             ))
           )}
 
-          {/* Streaming Loading Bubble */}
-          {isSending && (
+          {/* Streaming Loading Bubble - Scoped strictly to the active session */}
+          {isSending && sendingSessionId === activeSession?.id && (
             <div className="flex space-x-3 justify-start">
               <div className="w-7 h-7 rounded bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
                 <Bot className="w-4 h-4" />
