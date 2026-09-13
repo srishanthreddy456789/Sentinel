@@ -4,12 +4,23 @@
 
 > **SENTINEL is a local-first LLMOps platform that continuously evaluates Large Language Models, diagnoses the root causes of failures, and automatically attempts to self-heal them.**
 
-[![Status](https://img.shields.io/badge/status-under--development-orange)]()
+[![Status](https://img.shields.io/badge/status-production--ready-emerald)]()
 [![Python](https://img.shields.io/badge/Python-3.11-blue)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-backend-009688)]()
 [![Ollama](https://img.shields.io/badge/Ollama-local--LLM-black)]()
 [![React](https://img.shields.io/badge/React-frontend-61DAFB)]()
 [![Docker](https://img.shields.io/badge/Docker-containerized-2496ED)]()
+[![Research Paper](https://img.shields.io/badge/Paper-SENTINEL%20v3.0.0-purple.svg)](RESEARCH_PAPER.md)
+[![Novel Features](https://img.shields.io/badge/Novel%20Features-6%20Unique%20Contributions-emerald.svg)](research/paper/UNIQUE_FEATURES.md)
+
+---
+
+## 📜 Official AI Research Paper
+
+The formal academic paper detailing SENTINEL's underlying mathematical models, hybrid dense-sparse vector embedding algorithms, and autonomous prompt self-healing mutation engine is available for public review:
+
+- 📖 **Full Research Paper**: [**SENTINEL: Autonomous LLMOps with Hybrid Subword-Dense Embedding Cosine Similarity, Real-Time Faithfulness Verification, and Closed-Loop Prompt Self-Healing**](RESEARCH_PAPER.md)
+- 💡 **Unique Features & Novel Contributions**: [**Key Differentiators vs Ragas, TruLens, DeepEval & LangSmith**](research/paper/UNIQUE_FEATURES.md)
 
 ---
 
