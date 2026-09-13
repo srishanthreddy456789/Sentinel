@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "SENTINEL"
-    VERSION: str = "2.0.0"
+    VERSION: str = "2.0.1"
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"

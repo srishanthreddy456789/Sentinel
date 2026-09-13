@@ -1,7 +1,11 @@
+"""
+SENTINEL SDK — Autonomous Evaluation & Self-Healing Python Client
+"""
+
 from sentinel_sdk.client import SentinelSDKClient
 from sentinel_sdk.wrapper import monitor
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 def init(api_key: str, base_url: str = "http://localhost:8000"):
     """
