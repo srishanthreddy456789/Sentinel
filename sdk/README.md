@@ -73,17 +73,69 @@ print(response)
 
 ---
 
-## 📖 API Reference
+## 📖 Predefined Programmatic Feature Functions
 
-### `sentinel.init(api_key: str, base_url: str = "http://localhost:8000")`
-Initializes the SDK singleton client.
-- `api_key`: Developer secret token or JWT token.
-- `base_url`: Endpoint of the SENTINEL FastAPI engine (defaults to `http://localhost:8000`).
+The SDK exports predefined functions matching every tab in the SENTINEL Desktop App:
 
-### `sentinel.monitor(target: Any, model_id: str = "default_model")`
-Monitors a function or class instance.
-- `target`: The callable function or model object.
-- `model_id`: Descriptive identifier for tracking model metrics in the SENTINEL dashboard.
+### 1. `sentinel.playground(input_text, expected_output=None, context=None)`
+Runs Playground execution & metric evaluation.
+```python
+metrics = sentinel.playground(
+    input_text="What is the refund policy?",
+    expected_output="Refunds are within 30 days."
+)
+print(metrics)
+# Output:
+# {'correctness': 1.0, 'faithfulness': 0.95, 'safety': 1.0, 'latency_ms': 14.2, 'overall_score': 0.975, 'passed': True, 'detected_failures': []}
+```
+
+### 2. `sentinel.evaluate(input_text, output_text, expected_output=None, context=None)`
+Runs full 9-dimensional metric evaluation on any input/output pair.
+```python
+metrics = sentinel.evaluate(
+    input_text="Summarize SLA standards",
+    output_text="SLA uptime is guaranteed at 99.9%",
+    expected_output="SLA uptime is 99.9%"
+)
+```
+
+### 3. `sentinel.diagnose(input_text, output_text, context=None)`
+Diagnoses failure taxonomy & isolates root causes.
+```python
+diag = sentinel.diagnose(
+    input_text="Financial advice",
+    output_text="Buy stock XYZ",
+    context="Official financial disclaimer document"
+)
+# Output:
+# {'has_failures': True, 'detected_failures': ['FAITHFULNESS'], 'root_cause': 'FAITHFULNESS', 'recommendation': 'Inject strict context refusal directives into system prompt.'}
+```
+
+### 4. `sentinel.heal(prompt, failure_type="FAITHFULNESS")`
+Runs the closed-loop prompt self-healing engine to synthesize mutated system prompt $P' = M(P, F)$.
+```python
+healed = sentinel.heal("You are a customer support bot.", failure_type="FAITHFULNESS")
+print(healed["healed_prompt"])
+```
+
+### 5. `sentinel.failures(limit=20)`
+Fetches recorded model failure incidents log.
+```python
+failures_list = sentinel.failures(limit=10)
+```
+
+### 6. `sentinel.requests(limit=50)`
+Fetches recent live request telemetry logs.
+```python
+request_logs = sentinel.requests(limit=20)
+```
+
+### 7. `sentinel.experiments(model_a="llama3.1:8b", model_b="mistral")`
+Runs side-by-side model experiment comparison.
+```python
+exp_results = sentinel.experiments("llama3.1:8b", "mistral")
+print(exp_results["winner"])  # Outputs winning model
+```
 
 ---
 
