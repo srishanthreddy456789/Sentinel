@@ -453,14 +453,16 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const createNewChatSession = (modelId: string): ChatSession => {
     const existingSessions = chatSessionsMap[modelId] || [];
+    const emptySessions = existingSessions.filter((s) => !s.messages || s.messages.length === 0);
+
     // Unused Chat Guard: If an empty/unused session already exists, switch to it instead of creating duplicate empty chats!
-    const unusedSession = existingSessions.find((s) => !s.messages || s.messages.length === 0);
-    if (unusedSession) {
+    if (emptySessions.length > 0) {
+      const targetSession = emptySessions[0];
       setActiveSessionIdMap((prev) => ({
         ...prev,
-        [modelId]: unusedSession.id,
+        [modelId]: targetSession.id,
       }));
-      return unusedSession;
+      return targetSession;
     }
 
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

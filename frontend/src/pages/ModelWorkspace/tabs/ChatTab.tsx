@@ -56,12 +56,27 @@ export const ChatTab: React.FC = () => {
   const hasEmptySession = sessions.some((s) => !s.messages || s.messages.length === 0);
   const isActiveSessionEmpty = activeSession && (!activeSession.messages || activeSession.messages.length === 0);
 
-  // Automatically ensure at least one chat session exists
+  // Automatically ensure EXACTLY 1 empty chat session exists by default, pruning any duplicates
   useEffect(() => {
-    if (selectedModel && (!sessions || sessions.length === 0)) {
+    if (!selectedModel) return;
+    const currentSessions = chatSessionsMap[selectedModel.id] || [];
+    const emptySessions = currentSessions.filter((s) => !s.messages || s.messages.length === 0);
+
+    if (currentSessions.length === 0) {
       createNewChatSession(selectedModel.id);
+    } else if (emptySessions.length > 1) {
+      // Prune extra empty sessions, keeping only 1 empty chat session
+      const keepEmptyId = (activeSession && (!activeSession.messages || activeSession.messages.length === 0))
+        ? activeSession.id
+        : emptySessions[0].id;
+
+      emptySessions.forEach((s) => {
+        if (s.id !== keepEmptyId) {
+          deleteChatSession(selectedModel.id, s.id);
+        }
+      });
     }
-  }, [selectedModel, sessions]);
+  }, [selectedModel, chatSessionsMap]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
