@@ -1,7 +1,7 @@
 {
   "name": "sentinel-desktop",
   "private": true,
-  "version": "2.0.1",
+  "version": "3.0.0",
   "type": "commonjs",
   "main": "electron/main.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:build": "npm run pack:win",
     "build:exe": "npm run pack:win",
-    "pack:win": "npm run build && electron-packager . SENTINEL --platform=win32 --arch=x64 --out=release/ --overwrite",
+    "pack:win": "npm run build && electron-packager . SENTINEL-v3.0.0-Windows-x64 --platform=win32 --arch=x64 --out=release/ --overwrite",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "cd .. && python -m pytest backend/tests/ --cov=backend/sentinel --cov=ai --cov-report=term-missing"

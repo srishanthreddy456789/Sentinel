@@ -1,7 +1,7 @@
 @echo off
-title SENTINEL — LLMOps & Self-Healing Platform v2.0.0
+title SENTINEL — LLMOps & Self-Healing Platform v3.0.0
 echo ===================================================
-echo   Starting SENTINEL Platform Services (v2.0.0)...
+echo   Starting SENTINEL Platform Services (v3.0.0)...
 echo ===================================================
 echo.
 

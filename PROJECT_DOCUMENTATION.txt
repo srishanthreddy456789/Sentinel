@@ -1,7 +1,7 @@
 ================================================================================
           SENTINEL — Autonomous LLMOps & Self-Healing Platform
                         Complete Technical Overview
-                                Version 2.0.1
+                                Version 3.0.0
 ================================================================================
 
 1. PROJECT SUMMARY & MISSION

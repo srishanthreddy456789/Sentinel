@@ -149,7 +149,7 @@ export const DesktopHeader: React.FC = () => {
             <Shield className="w-3.5 h-3.5" />
           </div>
           <span className="font-semibold text-zinc-100 tracking-wide text-xs">SENTINEL</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono">v2.0.0</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono">v3.0.0</span>
         </div>
 
         <div className="h-3.5 w-px bg-zinc-800" />
