@@ -24,6 +24,7 @@ from sentinel.api.routes import (
     models,
     monitor,
     predict,
+    projects,
     prompts,
     requests,
     research,
@@ -100,3 +101,5 @@ app.include_router(dashboard.router, prefix=api_v1_prefix)
 app.include_router(embeddings.router, prefix=api_v1_prefix)
 app.include_router(benchmarks.router, prefix=api_v1_prefix)
 app.include_router(research.router, prefix=api_v1_prefix)
+app.include_router(projects.router)
+

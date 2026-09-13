@@ -28,6 +28,7 @@ class Developer(Base):
     api_keys = relationship("ApiKey", back_populates="developer", cascade="all, delete-orphan")
     connected_apis = relationship("ConnectedApi", back_populates="developer", cascade="all, delete-orphan")
     models = relationship("Model", back_populates="developer", cascade="all, delete-orphan")
+    projects = relationship("Project", back_populates="developer", cascade="all, delete-orphan")
 
 class ApiKey(Base):
     __tablename__ = "api_keys"
@@ -376,5 +377,53 @@ class ModelVersion(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     model = relationship("Model", back_populates="versions")
+
+
+# Projects and Linked Multi-Chat Models
+class Project(Base):
+    __tablename__ = "projects"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    developer_id = Column(String(36), ForeignKey("developers.id"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    system_instructions = Column(Text, nullable=True)
+    context_docs = Column(Text, nullable=True)
+    default_model_id = Column(String(36), ForeignKey("connected_apis.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    developer = relationship("Developer", back_populates="projects")
+    default_model = relationship("ConnectedApi")
+    chats = relationship("ProjectChat", back_populates="project", cascade="all, delete-orphan")
+
+
+class ProjectChat(Base):
+    __tablename__ = "project_chats"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    project_id = Column(String(36), ForeignKey("projects.id"), nullable=False, index=True)
+    title = Column(String(150), nullable=False, default="New Conversation")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    project = relationship("Project", back_populates="chats")
+    messages = relationship("ProjectMessage", back_populates="chat", cascade="all, delete-orphan")
+
+
+class ProjectMessage(Base):
+    __tablename__ = "project_messages"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    chat_id = Column(String(36), ForeignKey("project_chats.id"), nullable=False, index=True)
+    role = Column(String(20), nullable=False)  # user, assistant, system
+    content = Column(Text, nullable=False)
+    correctness = Column(Float, nullable=True)
+    faithfulness = Column(Float, nullable=True)
+    latency_ms = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    chat = relationship("ProjectChat", back_populates="messages")
+
 
 
