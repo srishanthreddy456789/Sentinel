@@ -166,8 +166,8 @@ const handleSend = async (sessionId: string, message: string) => {
 
 This guarantees that background token generation in Chat Session $A$ displays progress indicators strictly within Session $A$'s sidebar item without leaking loading spinners into Session $B$.
 
-### 3.3 Python SDK Architecture (`sentinel-mlops` v3.0.0)
-To enable zero-friction integration in production Python LLM applications, SENTINEL includes an open-source SDK (`sentinel-mlops` available in the [SDK Directory](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk) on GitHub and [GitLab](https://gitlab.com/Srishanthreddy456789/SENTINEL)):
+### 3.3 Python SDK Architecture (`sentinel-eval-sdk` v3.0.0)
+To enable zero-friction integration in production Python LLM applications, SENTINEL includes an open-source SDK (`sentinel-eval-sdk` available on [PyPI](https://pypi.org/project/sentinel-eval-sdk/) and in the [SDK Directory](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk) on GitHub and [GitLab](https://gitlab.com/Srishanthreddy456789/SENTINEL)):
 
 ```python
 import sentinel_sdk as sentinel
@@ -351,7 +351,7 @@ SENTINEL includes built-in toxicity and regex filter guards to ensure generated 
 
 ## 8. Conclusion & Future Work
 
-In this paper, we introduced **SENTINEL**, an autonomous, local-first LLMOps platform featuring hybrid subword-dense vector embedding cosine similarity, 9-dimensional real-time quality gating, closed-loop prompt self-healing, and an open-source Python SDK (`sentinel-mlops`).
+In this paper, we introduced **SENTINEL**, an autonomous, local-first LLMOps platform featuring hybrid subword-dense vector embedding cosine similarity, 9-dimensional real-time quality gating, closed-loop prompt self-healing, and an open-source Python SDK (`sentinel-eval-sdk`).
 
 - 🐙 **GitHub**: [https://github.com/srishanthreddy456789/Sentinel](https://github.com/srishanthreddy456789/Sentinel)
 - 🦊 **GitLab**: [https://gitlab.com/Srishanthreddy456789/SENTINEL](https://gitlab.com/Srishanthreddy456789/SENTINEL)

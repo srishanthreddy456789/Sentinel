@@ -25,7 +25,8 @@ The formal academic paper detailing SENTINEL's underlying mathematical models, h
 - 📖 **Full Research Paper (Markdown)**: [**RESEARCH_PAPER.md**](RESEARCH_PAPER.md)
 - 📄 **PDF Preprint Manuscript**: [**SENTINEL_Research_Paper.pdf**](SENTINEL_Research_Paper.pdf)
 - 💡 **Unique Features & Novel Contributions**: [**Key Differentiators vs Ragas, TruLens, DeepEval & LangSmith**](research/paper/UNIQUE_FEATURES.md)
-- 🐍 **Python SDK Repository**: [**`sentinel-mlops` Python Client Directory**](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
+- 📦 **PyPI Package**: [**`sentinel-eval-sdk` v3.0.0 on PyPI**](https://pypi.org/project/sentinel-eval-sdk/)
+- 🐍 **Python SDK Repository**: [**`sentinel-eval-sdk` Python Client Directory**](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
 
 ---
 

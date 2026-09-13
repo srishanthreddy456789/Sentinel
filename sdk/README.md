@@ -1,6 +1,7 @@
-# SENTINEL Python SDK (`sentinel-mlops` v3.0.0)
+# SENTINEL Python SDK (`sentinel-eval-sdk` v3.0.0)
 
-[![Python](https://img.shields.io/badge/Python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://pypi.org/project/sentinel-mlops/)
+[![PyPI](https://img.shields.io/pypi/v/sentinel-eval-sdk.svg)](https://pypi.org/project/sentinel-eval-sdk/)
+[![Python](https://img.shields.io/badge/Python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://pypi.org/project/sentinel-eval-sdk/)
 [![Version](https://img.shields.io/badge/version-3.0.0-emerald.svg)](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
 [![GitHub SDK](https://img.shields.io/badge/GitHub-SDK%20Source-black.svg?logo=github)](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
 [![GitLab](https://img.shields.io/badge/GitLab-Srishanthreddy456789%2FSENTINEL-orange.svg?logo=gitlab)](https://gitlab.com/Srishanthreddy456789/SENTINEL)
@@ -10,14 +11,13 @@
 
 ---
 
-## 📌 Repository Links
+## 📌 Repository & PyPI Links
 
+- 📦 **PyPI Package**: [https://pypi.org/project/sentinel-eval-sdk/](https://pypi.org/project/sentinel-eval-sdk/)
 - 🐍 **Python SDK Directory**: [https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
-- 🌐 **ResearchGate Publication**: [https://www.researchgate.net/publication/414271476_SENTINEL...](https://www.researchgate.net/publication/414271476_SENTINEL_Autonomous_LLMOps_with_Hybrid_Subword-Dense_Embedding_Cosine_Similarity_Real-Time_Faithfulness_Verification_and_Closed-Loop_Prompt_Self-Healing)
+- 🌐 **ResearchGate Publication**: [https://www.researchgate.net/publication/414271476_SENTINEL_Autonomous_LLMOps_with_Hybrid_Subword-Dense_Embedding_Cosine_Similarity_Real-Time_Faithfulness_Verification_and_Closed-Loop_Prompt_Self-Healing](https://www.researchgate.net/publication/414271476_SENTINEL_Autonomous_LLMOps_with_Hybrid_Subword-Dense_Embedding_Cosine_Similarity_Real-Time_Faithfulness_Verification_and_Closed-Loop_Prompt_Self-Healing)
 - 🐙 **Main GitHub Repository**: [https://github.com/srishanthreddy456789/Sentinel](https://github.com/srishanthreddy456789/Sentinel)
 - 🦊 **GitLab Mirror**: [https://gitlab.com/Srishanthreddy456789/SENTINEL](https://gitlab.com/Srishanthreddy456789/SENTINEL)
-- 📖 **AI Research Paper**: [SENTINEL Research Paper (PDF)](../research/paper/SENTINEL_Research_Paper.pdf)
-- 💡 **Key Novel Features**: [Unique Technological Features Matrix](../research/paper/UNIQUE_FEATURES.md)
 
 ---
 
@@ -26,7 +26,7 @@
 Install via `pip`:
 
 ```bash
-pip install sentinel-mlops
+pip install sentinel-eval-sdk
 ```
 
 Or install locally in development mode:
