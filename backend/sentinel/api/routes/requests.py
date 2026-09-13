@@ -30,6 +30,10 @@ class RequestIngestOut(BaseModel):
     output_text: str
     latency_ms: float
     overall_quality: float
+    correctness: float = 1.0
+    faithfulness: float = 1.0
+    toxicity: float = 0.0
+    passed: bool = True
     failure_type: Optional[str] = None
     diagnosis: Optional[Dict[str, Any]] = None
     healing_event: Optional[Dict[str, Any]] = None
@@ -231,6 +235,10 @@ async def ingest_request(
         output_text=output_text,
         latency_ms=latency_ms,
         overall_quality=eval_res.overall_score,
+        correctness=eval_res.correctness,
+        faithfulness=eval_res.faithfulness,
+        toxicity=eval_res.toxicity,
+        passed=eval_res.passed,
         failure_type=request_log.failure_type,
         diagnosis=diagnosis_data,
         healing_event=healing_data,
