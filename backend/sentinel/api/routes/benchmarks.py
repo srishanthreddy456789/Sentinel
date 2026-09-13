@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from sentinel.api.dependencies import get_current_developer
 from sentinel.database.models import Developer
-from ai.benchmarks.benchmark_framework import BenchmarkRunner
+from ai.benchmarks.benchmark_framework import SentinelBenchmarkFramework
 
 router = APIRouter(prefix="/benchmarks", tags=["Research Benchmarks"])
 
@@ -24,32 +24,31 @@ async def run_benchmark(
     payload: BenchmarkRunRequestSchema,
     current_developer: Developer = Depends(get_current_developer),
 ):
-    runner = BenchmarkRunner()
-    results = runner.run_all_benchmarks()
+    runner = SentinelBenchmarkFramework()
+    report = runner.run_benchmark(
+        suite_name=payload.benchmark_name or "SENTINEL-Master-Benchmark",
+        limit_per_category=payload.sample_count or 10,
+    )
     return {
         "status": "success",
         "benchmark_name": payload.benchmark_name,
         "sample_count": payload.sample_count,
-        "results": results,
+        "results": report.to_dict(),
     }
 
 @router.get("/summary", response_model=BenchmarkSummaryOut)
 async def get_benchmark_summary(
     current_developer: Developer = Depends(get_current_developer),
 ):
-    runner = BenchmarkRunner()
-    results = runner.run_all_benchmarks()
-    configs = results.get("configurations", {})
-    passed = [cfg for cfg, data in configs.items() if data.get("overall_score", 0) >= 0.75]
-    
+    runner = SentinelBenchmarkFramework()
+    report = runner.run_benchmark(limit_per_category=5)
+    cat_scores = report.category_scores
+    passed = [cat for cat, score in cat_scores.items() if score >= 0.70]
+
     return BenchmarkSummaryOut(
         benchmark_name="SENTINEL-8-Category-Master-Suite",
-        total_samples=results.get("total_samples", 800),
-        categories=[
-            "rag_grounding", "instruction_following", "hallucination_prevention",
-            "toxicity_safety", "consistency", "latency_optimization",
-            "self_healing_verification", "ci_gate_compliance"
-        ],
-        configurations=configs,
+        total_samples=report.total_cases,
+        categories=list(cat_scores.keys()),
+        configurations={"Master": report.to_dict()},
         passed_configurations=passed,
     )

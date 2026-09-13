@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from sentinel.api.dependencies import get_current_developer
 from sentinel.database.models import Developer
-from research.experiments.ablation_study import AblationStudyRunner
+from research.experiments.ablation_study import AblationStudyFramework
 
 router = APIRouter(prefix="/research", tags=["Research & Ablation Studies"])
 
@@ -18,8 +18,9 @@ class AblationStudyOut(BaseModel):
 async def get_ablation_study(
     current_developer: Developer = Depends(get_current_developer),
 ):
-    runner = AblationStudyRunner()
-    results = runner.run_ablation_study()
+    runner = AblationStudyFramework()
+    raw_results = runner.run_ablation_study(dataset=[])
+    results = {k: v.to_dict() for k, v in raw_results.items()}
     
     sorted_configs = sorted(
         results.items(),
