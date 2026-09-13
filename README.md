@@ -12,15 +12,18 @@
 [![Docker](https://img.shields.io/badge/Docker-containerized-2496ED)]()
 [![Python SDK](https://img.shields.io/badge/Python%20SDK-sentinel--mlops-blue.svg)](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
 [![Research Paper](https://img.shields.io/badge/Paper-SENTINEL%20v3.0.0-purple.svg)](RESEARCH_PAPER.md)
+[![ResearchGate](https://img.shields.io/badge/ResearchGate-Publication%20414271476-00CCBB.svg?logo=researchgate)](https://www.researchgate.net/publication/414271476_SENTINEL_Autonomous_LLMOps_with_Hybrid_Subword-Dense_Embedding_Cosine_Similarity_Real-Time_Faithfulness_Verification_and_Closed-Loop_Prompt_Self-Healing)
 [![Novel Features](https://img.shields.io/badge/Novel%20Features-6%20Unique%20Contributions-emerald.svg)](research/paper/UNIQUE_FEATURES.md)
 
 ---
 
 ## 📜 Official AI Research Paper & Python SDK
 
-The formal academic paper detailing SENTINEL's underlying mathematical models, hybrid dense-sparse vector embedding algorithms, and autonomous prompt self-healing mutation engine is available for public review:
+The formal academic paper detailing SENTINEL's underlying mathematical models, hybrid dense-sparse vector embedding algorithms, and autonomous prompt self-healing mutation engine is published and available for public review:
 
-- 📖 **Full Research Paper**: [**SENTINEL: Autonomous LLMOps with Hybrid Subword-Dense Embedding Cosine Similarity, Real-Time Faithfulness Verification, and Closed-Loop Prompt Self-Healing**](RESEARCH_PAPER.md)
+- 🌐 **ResearchGate Publication**: [**SENTINEL: Autonomous LLMOps with Hybrid Subword-Dense Embedding Cosine Similarity, Real-Time Faithfulness Verification, and Closed-Loop Prompt Self-Healing**](https://www.researchgate.net/publication/414271476_SENTINEL_Autonomous_LLMOps_with_Hybrid_Subword-Dense_Embedding_Cosine_Similarity_Real-Time_Faithfulness_Verification_and_Closed-Loop_Prompt_Self-Healing)
+- 📖 **Full Research Paper (Markdown)**: [**RESEARCH_PAPER.md**](RESEARCH_PAPER.md)
+- 📄 **PDF Preprint Manuscript**: [**SENTINEL_Research_Paper.pdf**](SENTINEL_Research_Paper.pdf)
 - 💡 **Unique Features & Novel Contributions**: [**Key Differentiators vs Ragas, TruLens, DeepEval & LangSmith**](research/paper/UNIQUE_FEATURES.md)
 - 🐍 **Python SDK Repository**: [**`sentinel-mlops` Python Client Directory**](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
 

@@ -13,6 +13,7 @@
 ## 📌 Repository Links
 
 - 🐍 **Python SDK Directory**: [https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk](https://github.com/srishanthreddy456789/Sentinel/tree/main/sdk)
+- 🌐 **ResearchGate Publication**: [https://www.researchgate.net/publication/414271476_SENTINEL...](https://www.researchgate.net/publication/414271476_SENTINEL_Autonomous_LLMOps_with_Hybrid_Subword-Dense_Embedding_Cosine_Similarity_Real-Time_Faithfulness_Verification_and_Closed-Loop_Prompt_Self-Healing)
 - 🐙 **Main GitHub Repository**: [https://github.com/srishanthreddy456789/Sentinel](https://github.com/srishanthreddy456789/Sentinel)
 - 🦊 **GitLab Mirror**: [https://gitlab.com/Srishanthreddy456789/SENTINEL](https://gitlab.com/Srishanthreddy456789/SENTINEL)
 - 📖 **AI Research Paper**: [SENTINEL Research Paper (PDF)](../research/paper/SENTINEL_Research_Paper.pdf)

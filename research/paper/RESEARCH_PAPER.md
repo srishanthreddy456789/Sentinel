@@ -4,7 +4,7 @@
 **Affiliation**: Autonomous AI Systems Research Lab & SENTINEL Project  
 **Date**: September 2026  
 **Document Version**: 3.0.0  
-**Repository Links**: [GitHub Repository](https://github.com/srishanthreddy456789/Sentinel) | [GitLab Mirror](https://gitlab.com/Srishanthreddy456789/SENTINEL)
+**Repository & Publication Links**: [ResearchGate Publication](https://www.researchgate.net/publication/414271476_SENTINEL_Autonomous_LLMOps_with_Hybrid_Subword-Dense_Embedding_Cosine_Similarity_Real-Time_Faithfulness_Verification_and_Closed-Loop_Prompt_Self-Healing) | [GitHub Repository](https://github.com/srishanthreddy456789/Sentinel) | [GitLab Mirror](https://gitlab.com/Srishanthreddy456789/SENTINEL)
 
 ---
 
