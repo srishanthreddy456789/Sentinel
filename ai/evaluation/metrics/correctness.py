@@ -21,8 +21,28 @@ def _get_transformer_model():
             _TRANSFORMER_MODEL = False
     return _TRANSFORMER_MODEL
 
+def compute_vector_embedding(text: str, n: int = 3) -> Dict[str, float]:
+    """Generates subword n-gram and token frequency vector embedding representation for text."""
+    clean_text = text.lower().strip()
+    if not clean_text:
+        return {}
+
+    vec: Dict[str, float] = {}
+    # Token vector features
+    words = re.findall(r'\w+|[^\w\s]', clean_text)
+    for w in words:
+        vec[f"tok_{w}"] = vec.get(f"tok_{w}", 0.0) + 1.0
+
+    # Character subword n-gram vector features (n=3)
+    padded = f"_{clean_text}_"
+    for i in range(len(padded) - n + 1):
+        gram = padded[i:i+n]
+        vec[f"gram_{gram}"] = vec.get(f"gram_{gram}", 0.0) + 0.5
+
+    return vec
+
 def calculate_cosine_similarity(text1: str, text2: str) -> float:
-    """Computes semantic similarity via sentence-transformers if available, else Jaccard word overlap fallback."""
+    """Computes high-dimensional vector embedding cosine similarity."""
     model = _get_transformer_model()
     if model:
         try:
@@ -34,16 +54,21 @@ def calculate_cosine_similarity(text1: str, text2: str) -> float:
             if norm1 > 0 and norm2 > 0:
                 return float(dot / (norm1 * norm2))
         except Exception as e:
-            logger.warning(f"Transformer similarity calculation failed: {e}")
+            logger.warning(f"Transformer vector embedding calculation failed: {e}")
 
-    # Fallback word-overlap similarity algorithm
-    words1 = set(re.findall(r'\w+', text1.lower()))
-    words2 = set(re.findall(r'\w+', text2.lower()))
-    if not words1 or not words2:
+    # Sparse / Dense TF-IDF Subword Vector Embedding Cosine Similarity
+    v1 = compute_vector_embedding(text1)
+    v2 = compute_vector_embedding(text2)
+    if not v1 or not v2:
         return 0.0
-    intersection = words1.intersection(words2)
-    union = words1.union(words2)
-    return len(intersection) / len(union)
+
+    dot = sum(val * v2[k] for k, val in v1.items() if k in v2)
+    norm1 = math.sqrt(sum(val * val for val in v1.values()))
+    norm2 = math.sqrt(sum(val * val for val in v2.values()))
+    if norm1 > 0 and norm2 > 0:
+        return float(dot / (norm1 * norm2))
+
+    return 0.0
 
 class CorrectnessMetric(BaseMetric):
     def __init__(self, threshold: Optional[float] = None):

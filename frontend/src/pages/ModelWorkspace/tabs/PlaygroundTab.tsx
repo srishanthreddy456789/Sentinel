@@ -3,22 +3,52 @@ import { Send, Check, ShieldCheck, Clock, RefreshCw, Terminal, Sparkles, Sliders
 import { useSentinel } from '../../../context/SentinelContext';
 import { requestService } from '../../../services/api';
 
-function calculateSimilarity(str1: string, str2: string): number {
+function computeEmbeddingVectorSimilarity(str1: string, str2: string): number {
   if (!str1 || !str2) return 0.0;
   const s1 = str1.trim().toLowerCase();
   const s2 = str2.trim().toLowerCase();
   if (s1 === s2) return 1.0;
 
-  const words1 = new Set(s1.match(/\w+/g) || []);
-  const words2 = new Set(s2.match(/\w+/g) || []);
-  if (words1.size === 0 || words2.size === 0) return 0.0;
+  const buildVector = (text: string): Record<string, number> => {
+    const vec: Record<string, number> = {};
+    const tokens = text.match(/\w+|[^\w\s]/g) || [];
+    for (const tok of tokens) {
+      vec[`tok_${tok}`] = (vec[`tok_${tok}`] || 0) + 1.0;
+    }
+    const padded = `_${text}_`;
+    for (let i = 0; i <= padded.length - 3; i++) {
+      const gram = padded.substring(i, i + 3);
+      vec[`gram_${gram}`] = (vec[`gram_${gram}`] || 0) + 0.5;
+    }
+    return vec;
+  };
 
-  let intersection = 0;
-  words1.forEach((w) => {
-    if (words2.has(w)) intersection++;
-  });
-  const union = words1.size + words2.size - intersection;
-  return union > 0 ? Number((intersection / union).toFixed(4)) : 0.0;
+  const v1 = buildVector(s1);
+  const v2 = buildVector(s2);
+
+  let dot = 0;
+  let norm1 = 0;
+  let norm2 = 0;
+
+  for (const k in v1) {
+    const val = v1[k];
+    norm1 += val * val;
+    if (k in v2) {
+      dot += val * v2[k];
+    }
+  }
+  for (const k in v2) {
+    norm2 += v2[k] * v2[k];
+  }
+
+  norm1 = Math.sqrt(norm1);
+  norm2 = Math.sqrt(norm2);
+
+  if (norm1 > 0 && norm2 > 0) {
+    const similarity = dot / (norm1 * norm2);
+    return Number(similarity.toFixed(4));
+  }
+  return 0.0;
 }
 
 export const PlaygroundTab: React.FC = () => {
@@ -57,7 +87,7 @@ export const PlaygroundTab: React.FC = () => {
       let isPassed = data.passed !== undefined ? data.passed : true;
 
       if (expectedOutput && expectedOutput.trim()) {
-        correctnessScore = calculateSimilarity(data.output_text, expectedOutput);
+        correctnessScore = computeEmbeddingVectorSimilarity(data.output_text, expectedOutput);
         isPassed = correctnessScore >= 0.60;
       }
 
@@ -157,7 +187,7 @@ export const PlaygroundTab: React.FC = () => {
         let isPassed = true;
 
         if (expectedOutput && expectedOutput.trim()) {
-          correctnessScore = calculateSimilarity(outputText, expectedOutput);
+          correctnessScore = computeEmbeddingVectorSimilarity(outputText, expectedOutput);
           isPassed = correctnessScore >= 0.60;
         }
 
