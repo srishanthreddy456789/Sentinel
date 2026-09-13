@@ -151,10 +151,11 @@ async def ingest_request(
             context=payload.context,
         )
 
+        diag_type = getattr(diag, "diagnosis_type", getattr(diag, "diagnosis", "UNKNOWN"))
         failure_record = Failure(
             connected_api_id=api_obj.id,
             request_log_id=request_log.id,
-            failure_type=diag.diagnosis_type,
+            failure_type=diag_type,
             severity="High" if diag.confidence > 0.85 else "Medium",
             input_text=payload.prompt,
             output_text=output_text,
@@ -165,7 +166,7 @@ async def ingest_request(
 
         diagnosis_record = Diagnosis(
             failure_id=failure_record.id,
-            diagnosis_type=diag.diagnosis_type,
+            diagnosis_type=diag_type,
             confidence=diag.confidence,
             reason=diag.reason,
             evidence=diag.evidence,
@@ -174,7 +175,7 @@ async def ingest_request(
         await db.flush()
 
         diagnosis_data = {
-            "diagnosis_type": diag.diagnosis_type,
+            "diagnosis_type": diag_type,
             "confidence": diag.confidence,
             "reason": diag.reason,
             "evidence": diag.evidence,

@@ -15,9 +15,14 @@ class DiagnosisResultSchema(BaseModel):
     evidence: Dict[str, Any] = Field(default_factory=dict)
     can_auto_heal: bool = False
 
+    @property
+    def diagnosis_type(self) -> str:
+        return self.diagnosis
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "diagnosis": self.diagnosis,
+            "diagnosis_type": self.diagnosis,
             "confidence": self.confidence,
             "reason": self.reason,
             "evidence": self.evidence,

@@ -88,7 +88,7 @@ export const PlaygroundTab: React.FC = () => {
 
       if (expectedOutput && expectedOutput.trim()) {
         correctnessScore = computeEmbeddingVectorSimilarity(data.output_text, expectedOutput);
-        isPassed = correctnessScore >= 0.60;
+        isPassed = correctnessScore >= 0.50;
       }
 
       const overallScore = expectedOutput && expectedOutput.trim()
@@ -214,7 +214,7 @@ export const PlaygroundTab: React.FC = () => {
 
         if (expectedOutput && expectedOutput.trim()) {
           correctnessScore = computeEmbeddingVectorSimilarity(outputText, expectedOutput);
-          isPassed = correctnessScore >= 0.60;
+          isPassed = correctnessScore >= 0.50;
         }
 
         const faithfulnessScore = outputText.startsWith('⚠️') ? 0.0 : 0.95;
@@ -253,7 +253,37 @@ export const PlaygroundTab: React.FC = () => {
   if (!selectedModel) return null;
 
   const correctnessVal = evalResult?.correctness !== undefined ? evalResult.correctness : 1.0;
-  const isCorrectnessPass = evalResult?.passed !== undefined ? evalResult.passed : correctnessVal >= 0.60;
+  
+  // 3-Tier Correctness Thresholds: Green >= 70% (>= 0.70), Yellow >= 50% (0.50 <= score < 0.70), Red < 50% (< 0.50)
+  const getCorrectnessBadge = (score: number) => {
+    if (score >= 0.70) {
+      return {
+        textClass: 'text-emerald-400',
+        borderClass: 'border-emerald-500/30',
+        bgClass: 'bg-emerald-950/10',
+        label: '✓ Pass',
+        icon: <Check className="w-3.5 h-3.5 text-emerald-400" />,
+      };
+    } else if (score >= 0.50) {
+      return {
+        textClass: 'text-amber-400',
+        borderClass: 'border-amber-500/40',
+        bgClass: 'bg-amber-950/10',
+        label: '⚠ Pass',
+        icon: <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />,
+      };
+    } else {
+      return {
+        textClass: 'text-red-400',
+        borderClass: 'border-red-500/40',
+        bgClass: 'bg-red-950/10',
+        label: '✕ Fail',
+        icon: <XCircle className="w-3.5 h-3.5 text-red-400" />,
+      };
+    }
+  };
+
+  const correctnessBadge = getCorrectnessBadge(correctnessVal);
   const faithfulnessVal = evalResult?.faithfulness !== undefined ? evalResult.faithfulness : 0.95;
   const isSafetyPass = (evalResult?.toxicity || 0) < 0.10;
   const overallQualityVal = evalResult?.overall_quality !== undefined ? evalResult.overall_quality : 0.95;
@@ -388,11 +418,11 @@ export const PlaygroundTab: React.FC = () => {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono">
                 {/* Correctness Metric Card */}
-                <div className={`p-2.5 bg-[#09090b] border rounded flex items-center justify-between ${isCorrectnessPass ? 'border-emerald-500/30' : 'border-red-500/40 bg-red-950/10'}`}>
+                <div className={`p-2.5 bg-[#09090b] border rounded flex items-center justify-between ${correctnessBadge.borderClass} ${correctnessBadge.bgClass}`}>
                   <span className="text-[11px] text-zinc-400">Correctness</span>
-                  <span className={`text-xs font-semibold flex items-center space-x-0.5 ${isCorrectnessPass ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {isCorrectnessPass ? <Check className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                    <span>{isCorrectnessPass ? '✓ Pass' : '✕ Fail'} ({(correctnessVal * 100).toFixed(1)}%)</span>
+                  <span className={`text-xs font-semibold flex items-center space-x-0.5 ${correctnessBadge.textClass}`}>
+                    {correctnessBadge.icon}
+                    <span>{correctnessBadge.label} ({(correctnessVal * 100).toFixed(1)}%)</span>
                   </span>
                 </div>
 
