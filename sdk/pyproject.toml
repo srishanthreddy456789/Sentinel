@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sentinel-eval-sdk"
-version = "3.0.0"
+version = "3.0.1"
 description = "Official Python SDK for SENTINEL Autonomous LLMOps & Self-Healing Platform"
 readme = "README.md"
 authors = [{ name = "Srishanth Reddy", email = "srishanthreddy311030@gmail.com" }]

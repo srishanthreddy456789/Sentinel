@@ -127,12 +127,12 @@ Workspace Tabs:
 11. Prompts Tab: Version control registry for system prompt iterations.
 
 
-8. PYTHON SDK (`sentinel-mlops` v2.0.0)
+8. PYTHON SDK (`sentinel-eval-sdk` v3.0.1)
 --------------------------------------------------------------------------------
 The Python SDK (`sdk/sentinel_sdk/`) enables 1-line integration:
 
 Installation:
-  pip install -e .
+  pip install sentinel-eval-sdk
 
 Usage:
   import sentinel_sdk as sentinel
