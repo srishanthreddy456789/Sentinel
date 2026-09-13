@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 import {
   ConnectedModel,
   GlobalMetrics,
@@ -77,12 +78,15 @@ interface SentinelContextType {
 
 const SentinelContext = createContext<SentinelContextType | undefined>(undefined);
 
-const MODELS_KEY = 'sentinel_custom_models';
-
 export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, token } = useAuth();
+  const userId = user?.id || 'guest_user';
+  const MODELS_KEY = `sentinel_custom_models_${userId}`;
+  const API_KEYS_KEY = `sentinel_api_keys_${userId}`;
+
   const [models, setModels] = useState<ConnectedModel[]>(() => {
     try {
-      const saved = localStorage.getItem(MODELS_KEY);
+      const saved = localStorage.getItem(MODELS_KEY) || localStorage.getItem('sentinel_custom_models');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -94,22 +98,40 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
     return INITIAL_MODELS;
   });
+
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('Dashboard');
   const [selectedFailureId, setSelectedFailureId] = useState<string | null>(null);
   const [isAddApiModalOpen, setIsAddApiModalOpen] = useState<boolean>(false);
 
-  // Persist models state to localStorage whenever it updates
-  React.useEffect(() => {
+  // Reload user-scoped models whenever the logged-in user changes
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(MODELS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setModels(parsed);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to reload account models:', e);
+    }
+  }, [userId, MODELS_KEY]);
+
+  // Persist models state to user-scoped localStorage key
+  useEffect(() => {
     try {
       localStorage.setItem(MODELS_KEY, JSON.stringify(models));
+      localStorage.setItem('sentinel_custom_models', JSON.stringify(models));
     } catch (e) {
       console.warn('Failed to save models to localStorage:', e);
     }
-  }, [models]);
+  }, [models, MODELS_KEY]);
 
-  // Fetch real connected models from backend on startup
-  React.useEffect(() => {
+  // Fetch real connected models from backend for this account
+  useEffect(() => {
     const fetchBackendConnections = async () => {
       try {
         const backendApis = await connectionService.listConnections();
@@ -143,7 +165,7 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     };
     fetchBackendConnections();
-  }, []);
+  }, [userId, token]);
 
   // Stateful copies of mock data maps for interactive updates
   const [evaluationsMap, setEvaluationsMap] = useState<Record<string, EvaluationRun[]>>(MOCK_EVALUATIONS);
@@ -153,7 +175,19 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [requestsMap, setRequestsMap] = useState<Record<string, RequestLog[]>>(MOCK_REQUESTS);
   const [experimentsMap, setExperimentsMap] = useState<Record<string, ExperimentData[]>>(MOCK_EXPERIMENTS);
   const [promptsMap, setPromptsMap] = useState<Record<string, PromptVersion[]>>(MOCK_PROMPTS);
-  const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>(MOCK_API_KEYS);
+  const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(API_KEYS_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return MOCK_API_KEYS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(API_KEYS_KEY, JSON.stringify(apiKeys));
+    } catch (e) {}
+  }, [apiKeys, API_KEYS_KEY]);
   const [chatThreadsMap, setChatThreadsMap] = useState<Record<string, ChatMessage[]>>(DEFAULT_CHAT_THREADS);
 
   // Derived selected model
