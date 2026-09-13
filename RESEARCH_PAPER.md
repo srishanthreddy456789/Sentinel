@@ -246,7 +246,7 @@ The overall quality score $Q$ aggregates all sub-metrics:
 $$Q = 0.30 S_{\text{correctness}} + 0.20 S_{\text{faithfulness}} + 0.15 S_{\text{instruction}} + 0.15 S_{\text{consistency}} + 0.10(1 - S_{\text{toxicity}}) + 0.10 S_{\text{latency}}$$
 
 #### Dynamic Quality Gate Classification
-$$\text{GateStatus}(Q) = \begin{cases} \text{\textbf{GREEN} (Passed)} & \text{if } Q \ge 0.70 \text{ and } |\text{Failures}| = 0 \\ \text{\textbf{YELLOW} (Warning)} & \text{if } 0.50 \le Q < 0.70 \\ \text{\textbf{RED} (Failed)} & \text{if } Q < 0.50 \text{ or } |\text{Failures}| > 0 \end{cases}$$
+$$\text{GateStatus}(Q) = \begin{cases} \text{GREEN (Passed)} & \text{if } Q \ge 0.70 \text{ and } |\text{Failures}| = 0 \\ \text{YELLOW (Warning)} & \text{if } 0.50 \le Q < 0.70 \\ \text{RED (Failed)} & \text{if } Q < 0.50 \text{ or } |\text{Failures}| > 0 \end{cases}$$
 
 ---
 
@@ -280,7 +280,7 @@ When quality gating evaluates to $\text{RED}$, SENTINEL executes the **Self-Heal
 ### 5.1 Diagnosis Operator ($\mathcal{D}$)
 Maps metric outputs to canonical failure classes:
 
-$$\mathcal{D}(\mathbf{M}) = \big\{ f_i \mid M_i . \text{score} < M_i . \text{threshold} \big\}$$
+$$\mathcal{D}(\mathbf{M}) = \left\{ f_i \;\middle|\; M_i.\text{score} < M_i.\text{threshold} \right\}$$
 
 ### 5.2 Mutation Operator ($M(P, F)$)
 Generates augmented prompt $P'$ by injecting domain-specific repair directives:
