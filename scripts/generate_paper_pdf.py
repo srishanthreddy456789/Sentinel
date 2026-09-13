@@ -32,13 +32,13 @@ MathJax = {{
 <style>
   @page {{
     size: letter;
-    margin: 20mm 18mm 20mm 18mm;
+    margin: 22mm 20mm 22mm 20mm;
   }}
 
   body {{
     font-family: 'Times New Roman', Times, serif;
-    font-size: 10.5pt;
-    line-height: 1.45;
+    font-size: 11pt;
+    line-height: 1.55;
     color: #111;
     background: #fff;
     margin: 0;
@@ -46,98 +46,99 @@ MathJax = {{
   }}
 
   h1 {{
-    font-size: 17pt;
+    font-size: 18pt;
     font-weight: bold;
     text-align: center;
     margin-top: 10px;
     margin-bottom: 14px;
     line-height: 1.25;
-    color: #0b132b;
+    color: #0f172a;
   }}
 
   h2 {{
-    font-size: 12pt;
+    font-size: 13pt;
     font-weight: bold;
     text-transform: uppercase;
-    color: #0b132b;
-    border-bottom: 1.5px solid #1c2541;
+    color: #0f172a;
+    border-bottom: 1.5px solid #0f172a;
     padding-bottom: 3px;
-    margin-top: 20px;
-    margin-bottom: 10px;
+    margin-top: 24px;
+    margin-bottom: 12px;
   }}
 
   h3 {{
-    font-size: 11pt;
+    font-size: 11.5pt;
     font-weight: bold;
-    color: #1c2541;
-    margin-top: 15px;
-    margin-bottom: 6px;
+    color: #1e293b;
+    margin-top: 18px;
+    margin-bottom: 8px;
   }}
 
   h4 {{
-    font-size: 10pt;
+    font-size: 10.5pt;
     font-weight: bold;
     font-style: italic;
-    color: #3a506b;
-    margin-top: 12px;
-    margin-bottom: 4px;
+    color: #334155;
+    margin-top: 14px;
+    margin-bottom: 6px;
   }}
 
   p {{
     text-align: justify;
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }}
 
   strong {{
-    color: #0b132b;
+    color: #0f172a;
   }}
 
   ul, ol {{
     margin-top: 0;
-    margin-bottom: 10px;
-    padding-left: 22px;
+    margin-bottom: 12px;
+    padding-left: 24px;
   }}
 
   li {{
-    margin-bottom: 4px;
+    margin-bottom: 5px;
   }}
 
   code {{
     font-family: 'Courier New', Courier, monospace;
-    font-size: 9pt;
-    background-color: #f4f5f6;
-    padding: 2px 4px;
+    font-size: 9.5pt;
+    background-color: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 5px;
     border-radius: 3px;
-    border: 1px solid #e1e4e8;
+    border: 1px solid #cbd5e1;
   }}
 
   pre {{
     font-family: 'Courier New', Courier, monospace;
     font-size: 8.5pt;
-    background-color: #1c2541;
-    color: #edf2f4;
+    background-color: #f8fafc;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
     padding: 12px;
-    border-radius: 5px;
+    border-radius: 4px;
     overflow-x: auto;
     line-height: 1.35;
-    margin-top: 10px;
-    margin-bottom: 14px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+    margin-top: 12px;
+    margin-bottom: 16px;
+    white-space: pre;
   }}
 
   table {{
     width: 100%;
     border-collapse: collapse;
-    margin-top: 14px;
-    margin-bottom: 16px;
-    font-size: 9pt;
+    margin-top: 16px;
+    margin-bottom: 20px;
+    font-size: 9.5pt;
   }}
 
   th, td {{
-    border: 1px solid #cbd5e1;
-    padding: 6px 10px;
+    border: 1px solid #94a3b8;
+    padding: 7px 12px;
     text-align: left;
   }}
 
@@ -153,9 +154,9 @@ MathJax = {{
 
   blockquote {{
     font-style: italic;
-    border-left: 3px solid #1c2541;
+    border-left: 3.5px solid #0f172a;
     margin-left: 0;
-    padding-left: 12px;
+    padding-left: 14px;
     color: #334155;
   }}
 
