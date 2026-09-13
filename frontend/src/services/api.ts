@@ -1,7 +1,7 @@
 const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000/api/v1';
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('sentinel_token') || 'demo_token';
+  const token = localStorage.getItem('sentinel_auth_token') || localStorage.getItem('sentinel_token') || 'demo_token';
   const headers = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,

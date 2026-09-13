@@ -77,12 +77,36 @@ interface SentinelContextType {
 
 const SentinelContext = createContext<SentinelContextType | undefined>(undefined);
 
+const MODELS_KEY = 'sentinel_custom_models';
+
 export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [models, setModels] = useState<ConnectedModel[]>(INITIAL_MODELS);
+  const [models, setModels] = useState<ConnectedModel[]>(() => {
+    try {
+      const saved = localStorage.getItem(MODELS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load saved models from localStorage:', e);
+    }
+    return INITIAL_MODELS;
+  });
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('Dashboard');
   const [selectedFailureId, setSelectedFailureId] = useState<string | null>(null);
   const [isAddApiModalOpen, setIsAddApiModalOpen] = useState<boolean>(false);
+
+  // Persist models state to localStorage whenever it updates
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(MODELS_KEY, JSON.stringify(models));
+    } catch (e) {
+      console.warn('Failed to save models to localStorage:', e);
+    }
+  }, [models]);
 
   // Fetch real connected models from backend on startup
   React.useEffect(() => {
@@ -103,7 +127,16 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             baseUrl: api.base_url,
             createdAt: api.created_at ? api.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
           }));
-          setModels(loadedModels);
+
+          setModels((prev) => {
+            const merged = [...loadedModels];
+            for (const p of prev) {
+              if (!merged.some((m) => m.id === p.id || m.name === p.name)) {
+                merged.push(p);
+              }
+            }
+            return merged;
+          });
         }
       } catch (err) {
         console.warn('Backend connections fetch:', err);
@@ -217,7 +250,12 @@ export const SentinelProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   };
 
-  const deleteModel = (id: string) => {
+  const deleteModel = async (id: string) => {
+    try {
+      await connectionService.deleteConnection(id);
+    } catch (e) {
+      console.warn('Backend delete connection fallback:', e);
+    }
     setModels((prev) => prev.filter((m) => m.id !== id));
     if (selectedModelId === id) {
       setSelectedModelId(null);
