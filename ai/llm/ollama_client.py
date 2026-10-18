@@ -54,7 +54,7 @@ class OllamaClient:
 
         url = f"{self.base_url}/api/generate"
         try:
-            async with httpx.AsyncClient(timeout=httpx.Timeout(15.0, connect=3.0)) as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(8.0, connect=1.0)) as client:
                 resp = await client.post(
                     url,
                     json={"model": target_model, "prompt": prompt, "stream": False}

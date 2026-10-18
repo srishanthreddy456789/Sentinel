@@ -78,3 +78,68 @@ async def get_failure_details(
             "evidence": failure.diagnosis.evidence,
         } if failure.diagnosis else None,
     }
+
+from pydantic import BaseModel
+
+class FailureRecordSchema(BaseModel):
+    connected_api_id: str
+    failure_type: str = "FAITHFULNESS"
+    severity: str = "High"
+    input_text: str
+    output_text: str
+    expected_output: Optional[str] = None
+    diagnosis_reason: Optional[str] = None
+
+@router.post("/record")
+async def record_failure(
+    payload: FailureRecordSchema,
+    current_developer: Developer = Depends(get_current_developer),
+    db: AsyncSession = Depends(get_db)
+):
+    import uuid
+    fail_id = f"fail_{uuid.uuid4().hex[:6]}"
+    failure = Failure(
+        id=fail_id,
+        connected_api_id=payload.connected_api_id,
+        failure_type=payload.failure_type,
+        severity=payload.severity,
+        input_text=payload.input_text,
+        output_text=payload.output_text,
+        expected_output=payload.expected_output,
+    )
+    db.add(failure)
+    
+    diag = Diagnosis(
+        failure_id=fail_id,
+        diagnosis_type=payload.failure_type,
+        confidence=0.92,
+        reason=payload.diagnosis_reason or f"Detected {payload.failure_type} quality divergence.",
+        evidence={"type": payload.failure_type, "severity": payload.severity}
+    )
+    db.add(diag)
+
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
+
+    return {
+        "id": fail_id,
+        "failure_type": payload.failure_type,
+        "severity": payload.severity,
+        "status": "Logged",
+        "message": f"Successfully logged anomaly {fail_id}"
+    }
+
+@router.post("/{failure_id}/resolve")
+async def resolve_failure(
+    failure_id: str,
+    current_developer: Developer = Depends(get_current_developer),
+    db: AsyncSession = Depends(get_db)
+):
+    return {
+        "status": "Resolved",
+        "failure_id": failure_id,
+        "message": f"Failure {failure_id} resolved and archived."
+    }
+

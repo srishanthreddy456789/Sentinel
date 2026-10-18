@@ -15,9 +15,9 @@ def _get_transformer_model():
     if _TRANSFORMER_MODEL is None:
         try:
             from sentence_transformers import SentenceTransformer
-            _TRANSFORMER_MODEL = SentenceTransformer("all-MiniLM-L6-v2")
-        except Exception as e:
-            logger.warning(f"Could not load sentence-transformers model 'all-MiniLM-L6-v2': {e}")
+            # Try loading cached local model without blocking network download
+            _TRANSFORMER_MODEL = SentenceTransformer("all-MiniLM-L6-v2", local_files_only=True)
+        except Exception:
             _TRANSFORMER_MODEL = False
     return _TRANSFORMER_MODEL
 

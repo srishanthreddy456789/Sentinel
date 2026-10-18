@@ -15,8 +15,10 @@ from sentinel.api.routes import (
     auth,
     benchmarks,
     dashboard,
+    diagnosis,
     embeddings,
     evaluations,
+    experiments,
     failures,
     heal,
     healing,
@@ -98,6 +100,8 @@ app.include_router(predict.router, prefix=api_v1_prefix)
 app.include_router(monitor.router, prefix=api_v1_prefix)
 app.include_router(heal.router, prefix=api_v1_prefix)
 app.include_router(dashboard.router, prefix=api_v1_prefix)
+app.include_router(diagnosis.router, prefix=api_v1_prefix)
+app.include_router(experiments.router, prefix=api_v1_prefix)
 app.include_router(embeddings.router, prefix=api_v1_prefix)
 app.include_router(benchmarks.router, prefix=api_v1_prefix)
 app.include_router(research.router, prefix=api_v1_prefix)
