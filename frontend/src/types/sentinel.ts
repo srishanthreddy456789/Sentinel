@@ -146,6 +146,7 @@ export interface ExperimentData {
   improvement: number;
   status: 'Completed' | 'Running' | 'Draft';
   totalSamples: number;
+  created?: string;
 }
 
 export interface PromptVersion {

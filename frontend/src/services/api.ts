@@ -49,18 +49,42 @@ export const evaluationService = {
     request<any>(`/evaluations/suites/${suiteId}/cases`, { method: 'POST', body: JSON.stringify(data) }),
   runEvaluationSuite: (suiteId: string) =>
     request<any>(`/evaluations/suites/${suiteId}/run`, { method: 'POST' }),
+  runQuickEvaluation: (connectedApiId: string, promptVersion?: string, sampleCount?: number) =>
+    request<any>('/evaluations/run-quick', { method: 'POST', body: JSON.stringify({ connected_api_id: connectedApiId, prompt_version: promptVersion, sample_count: sampleCount }) }),
+  evaluate: (data: { input_text: string; output_text: string; expected_output?: string; context?: any }) =>
+    request<any>('/evaluations/evaluate', { method: 'POST', body: JSON.stringify(data) }),
   listEvaluationRuns: (apiId: string) => request<any[]>(`/evaluations/runs/${apiId}`),
 };
 
 export const failureService = {
   listFailures: (apiId: string) => request<any[]>(`/failures/${apiId}`),
   getFailureDetails: (failureId: string) => request<any>(`/failures/details/${failureId}`),
+  recordFailure: (data: { connected_api_id: string; failure_type: string; severity?: string; input_text: string; output_text: string; expected_output?: string; diagnosis_reason?: string }) =>
+    request<any>('/failures/record', { method: 'POST', body: JSON.stringify(data) }),
+  resolveFailure: (failureId: string) => request<any>(`/failures/${failureId}/resolve`, { method: 'POST' }),
+};
+
+export const diagnosisService = {
+  analyzeDiagnosis: (data: { connected_api_id?: string; input_text: string; output_text: string; expected_output?: string; context?: any; failure_id?: string }) =>
+    request<any>('/diagnosis/analyze', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export const healingService = {
   listHealingEvents: (apiId: string) => request<any[]>(`/healing/${apiId}`),
   triggerHealing: (data: { connected_api_id: string; original_prompt: string; failing_input: string; failing_output: string; expected_output?: string }) =>
     request<any>('/healing/trigger', { method: 'POST', body: JSON.stringify(data) }),
+  mutatePrompt: (data: { prompt: string; failure_type?: string; model_id?: string }) =>
+    request<any>('/healing/mutate', { method: 'POST', body: JSON.stringify(data) }),
+  promoteHealing: (healingId: string, data?: any) =>
+    request<any>(`/healing/${healingId}/promote`, { method: 'POST', body: JSON.stringify(data || {}) }),
+};
+
+export const experimentService = {
+  listExperiments: (apiId: string) => request<any[]>(`/experiments/${apiId}`),
+  runExperiment: (data: { connected_api_id: string; name?: string; version_a_prompt: string; version_b_prompt: string; version_a_name?: string; version_b_name?: string; test_queries?: any[] }) =>
+    request<any>('/experiments/run', { method: 'POST', body: JSON.stringify(data) }),
+  promoteWinner: (experimentId: string, data: { winner_version: string; promoted_prompt: string }) =>
+    request<any>(`/experiments/${experimentId}/promote`, { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export const promptService = {
