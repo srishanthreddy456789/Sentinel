@@ -22,6 +22,39 @@ import {
 } from 'recharts';
 import { useSentinel } from '../../../context/SentinelContext';
 
+const CustomPieTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="bg-[#18181b] border border-zinc-700 px-3 py-1.5 rounded-lg shadow-2xl text-xs flex items-center space-x-2 pointer-events-none">
+        <span
+          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+          style={{ backgroundColor: data.payload?.color || data.color }}
+        />
+        <span className="font-medium text-white">{data.name}:</span>
+        <span className="font-mono font-bold text-emerald-400">{data.value}</span>
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomLineTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-[#18181b] border border-zinc-700 px-3 py-1.5 rounded-lg shadow-2xl text-xs space-y-1 pointer-events-none">
+        <div className="text-[10px] font-mono text-zinc-400">{label}</div>
+        <div className="flex items-center space-x-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          <span className="font-medium text-white">Quality:</span>
+          <span className="font-mono font-bold text-emerald-400">{payload[0].value}%</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export const IndividualDashboardTab: React.FC = () => {
   const { selectedModel, failuresMap, evaluationsMap, healingMap, selectFailureForDiagnosis } = useSentinel();
 
@@ -163,7 +196,7 @@ export const IndividualDashboardTab: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="time" stroke="#71717a" fontSize={10} tickLine={false} />
                 <YAxis stroke="#71717a" fontSize={10} domain={[0, 100]} tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }} />
+                <Tooltip content={<CustomLineTooltip />} />
                 <Line type="monotone" dataKey="quality" stroke="#10b981" strokeWidth={2.5} dot={{ r: 3, fill: '#10b981' }} />
               </LineChart>
             </ResponsiveContainer>
@@ -194,7 +227,7 @@ export const IndividualDashboardTab: React.FC = () => {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }} />
+                    <Tooltip content={<CustomPieTooltip />} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

@@ -28,7 +28,7 @@ import { ConnectedModel, ModelHealth } from '../../types/sentinel';
 import { GLOBAL_QUALITY_SERIES, GLOBAL_REQUEST_SERIES } from '../../data/mockData';
 
 export const GlobalDashboard: React.FC = () => {
-  const { models, globalMetrics, selectModel, openAddApiModal } = useSentinel();
+  const { models, globalMetrics, selectModel, openAddApiModal, failuresMap, requestsMap } = useSentinel();
 
   const getHealthBadge = (health: ModelHealth) => {
     switch (health) {
@@ -70,11 +70,14 @@ export const GlobalDashboard: React.FC = () => {
     color: m.quality >= 95 ? '#10b981' : m.quality >= 85 ? '#eab308' : '#ef4444',
   }));
 
-  const failureChartData = models.map((m) => ({
-    name: m.name,
-    failures: m.failures,
-    color: m.failures > 100 ? '#ef4444' : m.failures > 50 ? '#eab308' : '#10b981',
-  }));
+  const failureChartData = models.map((m) => {
+    const failCount = (failuresMap[m.id] || []).length || m.failures || 0;
+    return {
+      name: m.name,
+      failures: failCount,
+      color: failCount > 100 ? '#ef4444' : failCount > 50 ? '#eab308' : '#10b981',
+    };
+  });
 
   const latencyChartData = models.map((m) => ({
     name: m.name,
@@ -215,9 +218,11 @@ export const GlobalDashboard: React.FC = () => {
                     {model.quality}%
                   </td>
                   <td className="px-4 py-3 text-right font-mono text-zinc-300">
-                    {model.requests.toLocaleString()}
+                    {(((requestsMap[model.id] || []).length || model.requests) || 0).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 text-right font-mono text-amber-400">{model.failures}</td>
+                  <td className="px-4 py-3 text-right font-mono text-amber-400">
+                    {(failuresMap[model.id] || []).length || model.failures || 0}
+                  </td>
                   <td className="px-4 py-3 text-right font-mono text-zinc-400">{model.latency}s</td>
                   <td className="px-4 py-3 text-center">
                     <span className="inline-flex items-center text-[10px] text-zinc-400 group-hover:text-white font-mono">
@@ -257,7 +262,9 @@ export const GlobalDashboard: React.FC = () => {
                 />
                 <YAxis stroke="#71717a" fontSize={10} domain={[0, 100]} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '8px', fontSize: '11px', color: '#ffffff' }}
+                  itemStyle={{ color: '#ffffff', fontWeight: 500 }}
+                  labelStyle={{ color: '#ffffff', fontWeight: 600 }}
                 />
                 <Bar dataKey="quality" radius={[4, 4, 0, 0]}>
                   {qualityChartData.map((entry, index) => (
@@ -285,7 +292,9 @@ export const GlobalDashboard: React.FC = () => {
                 <XAxis dataKey="time" stroke="#71717a" fontSize={10} tickLine={false} />
                 <YAxis stroke="#71717a" fontSize={10} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '8px', fontSize: '11px', color: '#ffffff' }}
+                  itemStyle={{ color: '#ffffff', fontWeight: 500 }}
+                  labelStyle={{ color: '#ffffff', fontWeight: 600 }}
                 />
                 {models.map((model, idx) => {
                   const colors = ['#10b981', '#3b82f6', '#eab308', '#a855f7', '#ec4899', '#06b6d4'];
@@ -321,7 +330,9 @@ export const GlobalDashboard: React.FC = () => {
                 <XAxis dataKey="name" stroke="#71717a" fontSize={10} tickLine={false} interval={0} angle={-10} textAnchor="end" />
                 <YAxis stroke="#71717a" fontSize={10} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '8px', fontSize: '11px', color: '#ffffff' }}
+                  itemStyle={{ color: '#ffffff', fontWeight: 500 }}
+                  labelStyle={{ color: '#ffffff', fontWeight: 600 }}
                 />
                 <Bar dataKey="failures" radius={[4, 4, 0, 0]}>
                   {failureChartData.map((entry, index) => (
@@ -349,7 +360,9 @@ export const GlobalDashboard: React.FC = () => {
                 <XAxis dataKey="name" stroke="#71717a" fontSize={10} tickLine={false} interval={0} angle={-10} textAnchor="end" />
                 <YAxis stroke="#71717a" fontSize={10} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '6px', fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '8px', fontSize: '11px', color: '#ffffff' }}
+                  itemStyle={{ color: '#ffffff', fontWeight: 500 }}
+                  labelStyle={{ color: '#ffffff', fontWeight: 600 }}
                 />
                 <Bar dataKey="latency" fill="#06b6d4" radius={[4, 4, 0, 0]} />
               </BarChart>
